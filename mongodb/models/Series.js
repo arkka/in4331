@@ -4,12 +4,13 @@
  * Module dependencies.
  */
 var mongoose = require('mongoose'),
-	Schema = mongoose.Schema;
+	Schema = mongoose.Schema,
+	ObjectId = mongoose.Schema.Types.ObjectId;
+
 /**
  * Series Schema
  */
 
-// TODO: It is only draft
 var SeriesSchema = new Schema({
 	title		: { type: String },
 

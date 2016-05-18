@@ -4,12 +4,12 @@
  * Module dependencies.
  */
 var mongoose = require('mongoose'),
-	Schema = mongoose.Schema;
+	Schema = mongoose.Schema,
+	ObjectId = mongoose.Schema.Types.ObjectId;
 /**
  * Movie Schema
  */
 
-// TODO: It is only draft
 var MovieSchema = new Schema({
 	title		: { type: String },
 

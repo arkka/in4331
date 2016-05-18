@@ -54,10 +54,29 @@ exports.update = function(req, res) {
  */
 exports.list = function(req, res) {
     Movie.find({}, function(err, movies){
-        if(err || !products) res.json({products: null, success: false});
+        if(err || !movies) res.json({movies: null, success: false});
         else res.json({movies: movies, success: true});
     });
 };
 
+/**
+ * Search
+ * SC1: Detailed movie information
+ */
+exports.search = function(req, res) {
+    var keyword = req.params.keyword;
+
+    console.log(keyword);
+
+    Movie.find({title: new RegExp(keyword, 'i')})
+        .exec(function(err, movies){
+        if(err || !movies ) res.json({movies: null, success: false});
+        else res.json({
+            keyword: keyword,
+            movies: movies,
+            success: true
+        });
+    });
+};
 
 
