@@ -68,13 +68,18 @@ exports.search = function(req, res) {
     var keyword = req.params.keyword;
 
     var query;
+
     if( keyword.length >= 12) {
         query = Movie.find({ $or: [
-            {'_id'  : new ObjectId(keyword) },
-            {'title': new RegExp(keyword, 'i')}
+            { _id  : new ObjectId(keyword) },
+            { title : new RegExp(keyword, 'i')},
+            { aka_titles: { "$elemMatch" : { title: new RegExp(keyword, 'i') }}}
         ]});
     } else {
-        query = Movie.find({'title': new RegExp(keyword, 'i')});
+        query = Movie.find({ $or: [
+            { title : new RegExp(keyword, 'i')},
+            { aka_titles: { "$elemMatch" : { title: new RegExp(keyword, 'i') }}}
+        ]});
     }
 
     query.exec(function(err, movies){
