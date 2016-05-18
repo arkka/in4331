@@ -4,19 +4,20 @@
  * Module dependencies.
  */
 var mongoose = require('mongoose'),
-	Schema = mongoose.Schema;
+	Schema = mongoose.Schema,
+	ObjectId = mongoose.Schema.Types.ObjectId;
 /**
  * Actor Schema
  */
 
-// TODO: It is only draft
 var ActorSchema = new Schema({
 	name		: {
-		first: {type: String},
 
-		middle: {type: String},
+		first		: { type: String },
 
-		last: {type: String}
+		middle		: { type: String },
+
+		last		: { type: String }
 	},
 
 	gender		: { type: String },
