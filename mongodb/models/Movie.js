@@ -19,7 +19,7 @@ var MovieSchema = new Schema({
 
 	type		: { type: String }, // What is this?
 
-	aliases		: [{
+	aka_titles		: [{
 		title		: { type: String },
 
 		year		: { type: Number },
