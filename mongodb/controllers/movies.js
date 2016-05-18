@@ -8,7 +8,8 @@
 var mongoose = require('mongoose'),
     ObjectId = mongoose.Types.ObjectId,
     Movie = mongoose.model('Movie'),
-    chalk = require('chalk');
+    chalk = require('chalk'),
+    _ = require('underscore');
 
 /**
  * Index
@@ -25,8 +26,13 @@ exports.index = function(req,res) {
 exports.create = function(req, res) {
     var movie = new Movie(req.body.movie);
     movie.save(function(err) {
-        if(err) res.json({product: null, success: false});
-        else res.json({movie: movie, success: false});
+        if(err) res.json({data: null, success: false});
+        else res.json({
+            data: {
+                movies: movie,
+            },
+            success: false
+        });
     });
 };
 
@@ -35,8 +41,13 @@ exports.create = function(req, res) {
  */
 exports.read = function(req, res) {
     Movie.findById(req.params.movieId, function(err, movie){
-        if(err || !movie) res.json({product: null, success: false});
-        else res.json({movie: movie, success: true});
+        if(err || !movie) res.json({data: null, success: false});
+        else res.json({
+            data: {
+                movies: movie,
+            },
+            success: true
+        });
     });
 };
 
@@ -45,8 +56,12 @@ exports.read = function(req, res) {
  */
 exports.update = function(req, res) {
     Movie.findByIdAndUpdate(req.params.movieId,  { $set: req.body.movie }, function(err, movie){
-        if(err || !movie) res.json({product: null, success: false});
-        else res.json({movie: movie, success: true});
+        if(err || !movie) res.json({data: null, success: false});
+        else res.json({
+            data: {
+                movies: movie,
+            },
+            success: true});
     });
 };
 
@@ -55,8 +70,14 @@ exports.update = function(req, res) {
  */
 exports.list = function(req, res) {
     Movie.find({}, function(err, movies){
-        if(err || !movies) res.json({movies: null, success: false});
-        else res.json({movies: movies, success: true});
+        if(err || !movies) res.json({data: null, success: false});
+        else res.json({
+            data: {
+                movies: movies,
+                movies_by_year: _.groupBy(movies, function(num){ return num.year; })
+            },
+            success: true
+        });
     });
 };
 
@@ -83,12 +104,17 @@ exports.search = function(req, res) {
     }
 
     query.exec(function(err, movies){
-        if(err || !movies ) res.json({movies: null, success: false});
-        else res.json({
-            keyword: keyword,
-            movies: movies,
-            success: true
-        });
+        if(err || !movies ) res.json({data: null, success: false});
+        else {
+            res.json({
+                keyword: keyword,
+                data: {
+                    movies: movies,
+                    movies_by_year: _.groupBy(movies, function(num){ return num.year; })
+                },
+                success: true
+            });
+        }
     });
 };
 
