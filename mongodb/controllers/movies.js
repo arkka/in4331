@@ -6,6 +6,7 @@
     Notes: ngecek product category & brand harus pake synchronous function
  */
 var mongoose = require('mongoose'),
+    ObjectId = mongoose.Types.ObjectId,
     Movie = mongoose.model('Movie'),
     chalk = require('chalk');
 
@@ -66,10 +67,17 @@ exports.list = function(req, res) {
 exports.search = function(req, res) {
     var keyword = req.params.keyword;
 
-    console.log(keyword);
+    var query;
+    if( keyword.length >= 12) {
+        query = Movie.find({ $or: [
+            {'_id'  : new ObjectId(keyword) },
+            {'title': new RegExp(keyword, 'i')}
+        ]});
+    } else {
+        query = Movie.find({'title': new RegExp(keyword, 'i')});
+    }
 
-    Movie.find({title: new RegExp(keyword, 'i')})
-        .exec(function(err, movies){
+    query.exec(function(err, movies){
         if(err || !movies ) res.json({movies: null, success: false});
         else res.json({
             keyword: keyword,
