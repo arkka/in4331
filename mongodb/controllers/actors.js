@@ -103,7 +103,7 @@ exports.search = function(req, res) {
             { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
         ]});
     }
-    query.populate('movies')
+    query.populate({path: 'movies', options: { sort: { 'year': -1 } } })
     query.exec(function(err, actors){
         if(err || !actors ) res.json({data: null, success: false});
         else {
