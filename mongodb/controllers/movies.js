@@ -117,3 +117,25 @@ exports.search = function(req, res) {
 };
 
 
+/**
+ * Genre
+ * SC4: Detailed movie information
+ */
+// TODO: Check check check with real data
+// TODO: Implement year range filter
+exports.genre = function(req, res) {
+    Movie.find({ genres: req.params.genre })
+        .sort({year: -1, title: 1})
+        .populate('casts.actor')
+        .exec(function(err, movies){
+        if(err || !movies) res.json({data: null, success: false});
+        else res.json({
+            data: {
+                movies: movies
+            },
+            success: true
+        });
+    });
+};
+
+
