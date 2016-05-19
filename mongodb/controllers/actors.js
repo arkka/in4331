@@ -5,7 +5,7 @@
  */
 var mongoose = require('mongoose'),
     ObjectId = mongoose.Types.ObjectId,
-    Movie = mongoose.model('Movie'),
+    Actor = mongoose.model('Actor'),
     chalk = require('chalk'),
     _ = require('underscore');
 
@@ -22,12 +22,12 @@ exports.index = function(req,res) {
  * Create
  */
 exports.create = function(req, res) {
-    var movie = new Movie(req.body.movie);
-    movie.save(function(err) {
+    var actor = new Actor(req.body.actor);
+    actor.save(function(err) {
         if(err) res.json({data: null, success: false});
         else res.json({
             data: {
-                movie: movie,
+                actor: actor,
             },
             success: false
         });
@@ -38,11 +38,11 @@ exports.create = function(req, res) {
  * Read
  */
 exports.read = function(req, res) {
-    Movie.findById(req.params.movieId, function(err, movie){
-        if(err || !movie) res.json({data: null, success: false});
+    Actor.findById(req.params.actorId, function(err, actor){
+        if(err || !actor) res.json({data: null, success: false});
         else res.json({
             data: {
-                movie: movie,
+                actor: actor,
             },
             success: true
         });
@@ -53,11 +53,11 @@ exports.read = function(req, res) {
  * Update
  */
 exports.update = function(req, res) {
-    Movie.findByIdAndUpdate(req.params.movieId,  { $set: req.body.movie }, function(err, movie){
-        if(err || !movie) res.json({data: null, success: false});
+    Actor.findByIdAndUpdate(req.params.actorId,  { $set: req.body.actor }, function(err, actor){
+        if(err || !actor) res.json({data: null, success: false});
         else res.json({
             data: {
-                movie: movie,
+                actor: actor,
             },
             success: true});
     });
@@ -67,12 +67,11 @@ exports.update = function(req, res) {
  * List
  */
 exports.list = function(req, res) {
-    Movie.find({}, function(err, movies){
-        if(err || !movies) res.json({data: null, success: false});
+    Actor.find({}, function(err, actors){
+        if(err || !actors) res.json({data: null, success: false});
         else res.json({
             data: {
-                movies: movies,
-                movies_by_year: _.groupBy(movies, function(num){ return num.year; })
+                actors: actors
             },
             success: true
         });
@@ -81,7 +80,7 @@ exports.list = function(req, res) {
 
 /**
  * Search
- * SC1: Detailed movie information
+ * SC2: Detailed actor information
  */
 exports.search = function(req, res) {
     var keyword = req.params.keyword;
@@ -89,26 +88,28 @@ exports.search = function(req, res) {
     var query;
 
     if( keyword.length >= 12) {
-        query = Movie.find({ $or: [
+        query = Actor.find({ $or: [
             { _id  : new ObjectId(keyword) },
-            { title : new RegExp(keyword, 'i')},
-            { aka_titles: { "$elemMatch" : { title: new RegExp(keyword, 'i') }}}
+            { "name.first" : new RegExp(keyword, 'i')},
+            { "name.last" : new RegExp(keyword, 'i')},
+            { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
         ]});
+
     } else {
-        query = Movie.find({ $or: [
-            { title : new RegExp(keyword, 'i')},
-            { aka_titles: { "$elemMatch" : { title: new RegExp(keyword, 'i') }}}
+        query = Actor.find({ $or: [
+            { "name.first" : new RegExp(keyword, 'i')},
+            { "name.last" : new RegExp(keyword, 'i')},
+            { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
         ]});
     }
 
-    query.exec(function(err, movies){
-        if(err || !movies ) res.json({data: null, success: false});
+    query.exec(function(err, actors){
+        if(err || !actors ) res.json({data: null, success: false});
         else {
             res.json({
                 keyword: keyword,
                 data: {
-                    movies: movies,
-                    movies_by_year: _.groupBy(movies, function(num){ return num.year; })
+                    actors: actors
                 },
                 success: true
             });
