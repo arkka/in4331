@@ -25,7 +25,8 @@ var ActorSchema = new Schema({
 	number		: { type: Number }, // What is this?
 
 	aka_names		: [{ type: String }],
-	
+
+	movies			: [{ type: ObjectId, ref: 'Movie' }],
 });
 
 mongoose.model('Actor', ActorSchema);

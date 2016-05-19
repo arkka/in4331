@@ -6,6 +6,7 @@
 var mongoose = require('mongoose'),
     ObjectId = mongoose.Types.ObjectId,
     Actor = mongoose.model('Actor'),
+    Movie = mongoose.model('Movie'),
     chalk = require('chalk'),
     _ = require('underscore');
 
@@ -102,7 +103,7 @@ exports.search = function(req, res) {
             { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
         ]});
     }
-
+    query.populate('movies')
     query.exec(function(err, actors){
         if(err || !actors ) res.json({data: null, success: false});
         else {
