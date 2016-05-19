@@ -118,4 +118,51 @@ exports.search = function(req, res) {
     });
 };
 
+/**
+ * Search
+ * SC3: Short Actor Statistics
+ */
+exports.stats = function(req, res) {
+    var keyword = req.params.keyword;
+
+    var query;
+
+    if( keyword.length >= 12) {
+        query = Actor.find({ $or: [
+            { _id  : new ObjectId(keyword) },
+            { "name.first" : new RegExp(keyword, 'i')},
+            { "name.last" : new RegExp(keyword, 'i')},
+            { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
+        ]});
+
+    } else {
+        query = Actor.find({ $or: [
+            { "name.first" : new RegExp(keyword, 'i')},
+            { "name.last" : new RegExp(keyword, 'i')},
+            { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
+        ]});
+    }
+    query.populate({path: 'movies', options: { sort: { 'year': -1 } } })
+    query.exec(function(err, actors){
+        if(err || !actors ) res.json({data: null, success: false});
+        else {
+            var astats = _.map(actors, function(num){
+
+                return {
+                    name: num.name.full,
+                    num_movies: num.movies.length
+                };
+            });
+
+            res.json({
+                keyword: keyword,
+                data: {
+                    actors: astats
+                },
+                success: true
+            });
+        }
+    });
+};
+
 

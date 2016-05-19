@@ -31,6 +31,9 @@ module.exports = function(app) {
     app.route('/actors/search/:keyword')
         .get(actors.search);
 
+    app.route('/actors/stats/:keyword')
+        .get(actors.stats);
+
     app.route('/actors/:actorId')
         .get(actors.read)
         .post(actors.update);

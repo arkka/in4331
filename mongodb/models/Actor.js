@@ -29,4 +29,14 @@ var ActorSchema = new Schema({
 	movies			: [{ type: ObjectId, ref: 'Movie' }],
 });
 
+ActorSchema
+	.virtual('name.full')
+	.get(function () {
+		var name = "";
+		if(this.name.first) name += this.name.first;
+		if(this.name.middle) name += ' '+ this.name.middle;
+		if(this.name.last) name += ' '+ this.name.last;
+		return name;
+	});
+
 mongoose.model('Actor', ActorSchema);
