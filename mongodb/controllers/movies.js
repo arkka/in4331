@@ -84,10 +84,12 @@ exports.list = function(req, res) {
  * SC1: Detailed movie information
  */
 exports.search = function(req, res) {
+    // Get variable for url parameter: keyword
     var keyword = req.params.keyword;
 
     var query;
 
+    // To differentiate whether the keyword is ObjectId or word
     if( keyword.length >= 12) {
         query = Movie.find({ $or: [
             { _id  : new ObjectId(keyword) },
@@ -136,6 +138,27 @@ exports.genre = function(req, res) {
             success: true
         });
     });
+};
+
+/**
+ * Genre
+ * SC4: Detailed movie information
+ */
+// TODO: Check check check with real data
+// TODO: Implement year range filter
+exports.genre_year = function(req, res) {
+    Movie.find({ genres: req.params.genre })
+        .sort({year: -1, title: 1})
+        .populate('casts.actor')
+        .exec(function(err, movies){
+            if(err || !movies) res.json({data: null, success: false});
+            else res.json({
+                data: {
+                    movies: movies
+                },
+                success: true
+            });
+        });
 };
 
 

@@ -18,6 +18,12 @@ module.exports = function(app) {
     app.route('/movies/search/:keyword')
         .get(movies.search);
 
+    app.route('/movies/explore/:genre')
+        .get(movies.genre)
+
+    app.route('/movies/explore/:genre/:yfrom/:yto')
+        .get(movies.genre_year)
+
     app.route('/movies/:movieId')
         .get(movies.read)
         .post(movies.update);
