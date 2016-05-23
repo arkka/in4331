@@ -10,7 +10,7 @@ var fs = require('fs'),
     morgan = require('morgan'),
     bodyParser = require('body-parser'),
     session = require('express-session'),
-    RedisStore          = require('connect-redis')(session),
+    //RedisStore          = require('connect-redis')(session),
     compress = require('compression'),
     methodOverride = require('method-override'),
     cookieParser = require('cookie-parser'),
@@ -84,6 +84,7 @@ module.exports = function(db) {
     });
     redis.on('ready', function (err) {
         console.log("Redis   : "+chalk.green('Connected'));
+        if(db) console.log("Postgres : "+chalk.green('Connected'));
     });
     */
 
