@@ -5,22 +5,17 @@
  */
 module.exports = function(app) {
     var movies = require('../controllers/movies');
+    var actors = require('../controllers/actors');
 
     app.route('/')
         .get(movies.index);
 
     app.route('/movies')
         .put(movies.create)
-        .get(movies.list);
+        .get(movies.list)
+        .get(movies.read);
 
     /*
-
-    var actors = require('../controllers/actors');
-
-
-
-
-
     app.route('/movies/search/:keyword')
         .get(movies.search);
 
@@ -49,7 +44,5 @@ module.exports = function(app) {
     app.route('/actors/:actorId')
         .get(actors.read)
         .post(actors.update);
-
-        */
-
+    */
 };
