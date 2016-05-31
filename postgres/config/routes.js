@@ -5,6 +5,7 @@
  */
 module.exports = function(app) {
     var movies = require('../controllers/movies');
+    var dump = require('../controllers/dump');
 
     app.route('/')
         .get(movies.index);
@@ -52,4 +53,6 @@ module.exports = function(app) {
 
         */
 
+    app.route('/dump/neo4j')
+        .get(dump.neo4j);
 };
