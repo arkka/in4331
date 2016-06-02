@@ -84,11 +84,6 @@ exports.list = function(req, res) {
         });
     })
 
-    /*
-    Movie.find({}, function(err, movies){
-     movies_by_year: _.groupBy(movies, function(num){ return num.year; })
-    });
-    */
 };
 
 /**
@@ -96,6 +91,12 @@ exports.list = function(req, res) {
  * SC1: Detailed movie information
  */
 exports.search = function(req, res) {
+    /*
+    sequelize.query("SELECT * FROM `users`", { type: sequelize.QueryTypes.SELECT})
+        .then(function(users) {
+            // We don't need spread here, since only the results will be returned for select queries
+        })
+        */
     /*
     // Get variable for url parameter: keyword
     var keyword = req.params.keyword;
