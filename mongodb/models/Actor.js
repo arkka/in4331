@@ -27,6 +27,9 @@ var ActorSchema = new Schema({
 	aka_names		: [{ type: String }],
 
 	movies			: [{ type: ObjectId, ref: 'Movie' }],
+
+	movies_by_year : Schema.Types.Mixed
+
 });
 
 ActorSchema

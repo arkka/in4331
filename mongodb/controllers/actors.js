@@ -88,6 +88,7 @@ exports.search = function(req, res) {
 
     var query;
 
+    // Differentiate between ObjectId and query
     if( keyword.length >= 12) {
         query = Actor.find({ $or: [
             { _id  : new ObjectId(keyword) },
@@ -107,6 +108,12 @@ exports.search = function(req, res) {
     query.exec(function(err, actors){
         if(err || !actors ) res.json({data: null, success: false});
         else {
+
+            actors = _.map(actors, function(num){
+                num.movies_by_year = _.groupBy(num.movies, function(nim){ return nim.year; });
+                return num;
+            });
+
             res.json({
                 keyword: keyword,
                 data: {

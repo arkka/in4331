@@ -95,11 +95,16 @@ exports.search = function(req, res) {
             { _id  : new ObjectId(keyword) },
             { title : new RegExp(keyword, 'i')},
             { aka_titles: { "$elemMatch" : { title: new RegExp(keyword, 'i') }}}
+            // Search with year on query
+            //{ year  : new RegExp(keyword, 'i')}
+
         ]});
     } else {
         query = Movie.find({ $or: [
             { title : new RegExp(keyword, 'i')},
             { aka_titles: { "$elemMatch" : { title: new RegExp(keyword, 'i') }}}
+            // Search with year on query
+            //{ year  : new RegExp(keyword, 'i')}
         ]});
     }
 
