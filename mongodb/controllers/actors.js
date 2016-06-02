@@ -30,7 +30,7 @@ exports.create = function(req, res) {
             data: {
                 actor: actor,
             },
-            success: false
+            success: true
         });
     });
 };
@@ -39,11 +39,14 @@ exports.create = function(req, res) {
  * Read
  */
 exports.read = function(req, res) {
+    var keyword = req.params.actorId;
+
     Actor.findById(req.params.actorId, function(err, actor){
         if(err || !actor) res.json({data: null, success: false});
         else res.json({
+            keyword: keyword,
             data: {
-                actor: actor,
+                actor: actor
             },
             success: true
         });
@@ -88,6 +91,7 @@ exports.search = function(req, res) {
 
     var query;
 
+    // Differentiate between ObjectId and query
     if( keyword.length >= 12) {
         query = Actor.find({ $or: [
             { _id  : new ObjectId(keyword) },
@@ -103,10 +107,17 @@ exports.search = function(req, res) {
             { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
         ]});
     }
-    query.populate({path: 'movies', options: { sort: { 'year': -1 } } })
+    // Sort movies result from the first
+    query.populate({path: 'movies', options: { sort: { 'year': 1 } } });
     query.exec(function(err, actors){
         if(err || !actors ) res.json({data: null, success: false});
         else {
+
+            actors = _.map(actors, function(num){
+                num.movies_by_year = _.groupBy(num.movies, function(nim){ return nim.year; });
+                return num;
+            });
+
             res.json({
                 keyword: keyword,
                 data: {
@@ -127,6 +138,7 @@ exports.stats = function(req, res) {
 
     var query;
 
+    // Differentiate between ObjectId and query
     if( keyword.length >= 12) {
         query = Actor.find({ $or: [
             { _id  : new ObjectId(keyword) },
@@ -142,12 +154,11 @@ exports.stats = function(req, res) {
             { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
         ]});
     }
-    query.populate({path: 'movies', options: { sort: { 'year': -1 } } })
+    query.populate({path: 'movies', options: { sort: { 'year': 1 } } });
     query.exec(function(err, actors){
         if(err || !actors ) res.json({data: null, success: false});
         else {
             var astats = _.map(actors, function(num){
-
                 return {
                     name: num.name.full,
                     num_movies: num.movies.length
@@ -164,5 +175,3 @@ exports.stats = function(req, res) {
         }
     });
 };
-
-
