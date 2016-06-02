@@ -348,33 +348,7 @@ exports.genre_stats_range = function(req, res) {
                 });
                 genres = uniq(genres);
             });
-            var l;
-
-            // TODO: Passing length
-            var result = _.map(genres, function(num){
-
-                var q = Movie.find({genres: num,$or: [
-                    { year: {
-                        $gte: yFrom,
-                        $lte: yTo
-                    }},
-                    { aka_titles: { "$elemMatch" : { year: {
-                        $gte: yFrom,
-                        $lte: yTo
-                    } }}}
-                ]});
-                q.exec(function(err1, mov){
-                    if(err1 || !mov) res.json({data: null, success: false});
-                    else {
-                        l = mov.length;
-                    }
-                });
-                return {
-                    name: num,
-                    total_mov: l
-                };
-            });
-
+            
             res.json({
                 keyword: {
                     year_start: yFrom,
@@ -382,7 +356,7 @@ exports.genre_stats_range = function(req, res) {
                 },
                 data: {
                     movies_total: moviesTotal,
-                    genre: result,
+                    genre: _.countBy(genres, function(num) { return num; }),
                     genres_total: genres.length
 
                 },
