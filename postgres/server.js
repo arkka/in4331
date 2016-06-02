@@ -12,11 +12,11 @@ var init = require('./config/init')(),
  */
 
 // Bootstrap db connection
-var db = new Sequelize(config.postgres);
-
+var sequelize = new Sequelize(config.postgres);
+sequelize.authenticate().then(function(errors) { console.log(errors) });
 
 // Init the express application
-var app = require('./config/express')(db);
+var app = require('./config/express')(sequelize);
 
 // Start the app by listening on <port>
 app.listen(config.app.port);

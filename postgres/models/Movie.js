@@ -12,13 +12,13 @@ module.exports = function(sequelize, DataTypes) {
 			autoIncrement: true
 		},
 		title: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING
 		},
 		year: {
-			type: DataTypes.INTEGER,
+			type: DataTypes.INTEGER
 		},
 		number: {
-			type: DataTypes.INTEGER,
+			type: DataTypes.INTEGER
 		},
 		location: {
 			type: DataTypes.STRING
@@ -30,6 +30,5 @@ module.exports = function(sequelize, DataTypes) {
 		timestamps: false,
 		tableName: 'movies'
 	});
-
 	return Movie;
 };

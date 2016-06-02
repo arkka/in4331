@@ -5,15 +5,23 @@
  */
 module.exports = function(app) {
     var movies = require('../controllers/movies');
+    var actors = require('../controllers/actors');
 
     app.route('/')
         .get(movies.index);
 
     app.route('/movies')
         .put(movies.create)
-        .get(movies.list)
-        .get(movies.read);
+        .get(movies.list);
+        //.get(movies.read);
 
+    app.route('/movies/search/:keyword')
+        .get(movies.search);
+
+    app.route('/actors')
+        .get(actors.list);
+    app.route('/actors/search/:keyword')
+        .get(actors.search);
     /*
 
     var actors = require('../controllers/actors');
