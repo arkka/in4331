@@ -16,7 +16,7 @@ exports.index = function(req,res) {
     res.jsonp({
         message: "Movie API - MongoDB"
     });
-}
+};
 
 /**
  * Create
@@ -38,11 +38,14 @@ exports.create = function(req, res) {
  * Read
  */
 exports.read = function(req, res) {
+    var keyword = req.params.movieId;
+
     Movie.findById(req.params.movieId, function(err, movie){
         if(err || !movie) res.json({data: null, success: false});
         else res.json({
+            keyword: keyword,
             data: {
-                movie: movie,
+                movie: movie
             },
             success: true
         });
@@ -57,7 +60,7 @@ exports.update = function(req, res) {
         if(err || !movie) res.json({data: null, success: false});
         else res.json({
             data: {
-                movie: movie,
+                movie: movie
             },
             success: true});
     });
@@ -129,15 +132,19 @@ exports.search = function(req, res) {
  * SC4: Detailed movie information
  */
 // TODO: Check check check with real data
-// TODO: Implement year range filter
 exports.genre = function(req, res) {
+
+    var keyword = req.params.genre;
+
     Movie.find({ genres: req.params.genre })
-        .sort({year: -1, title: 1})
+        .sort({year: 1, title: 1})
         .populate('casts.actor')
         .exec(function(err, movies){
         if(err || !movies) res.json({data: null, success: false});
         else res.json({
+            keyword: keyword,
             data: {
+                movie_total: movies.length,
                 movies: movies
             },
             success: true
@@ -147,18 +154,29 @@ exports.genre = function(req, res) {
 
 /**
  * Genre
- * SC4: Detailed movie information
+ * SC4: Detailed movie information genre with year
  */
 // TODO: Check check check with real data
-// TODO: Implement year range filter
 exports.genre_year = function(req, res) {
-    Movie.find({ genres: req.params.genre })
-        .sort({year: -1, title: 1})
+
+    var genreQ = req.params.genre;
+    var yearQ = req.params.year;
+
+    Movie.find({ genres: req.params.genre, $or: [
+            { year: req.params.year},
+            { aka_titles: { "$elemMatch" : { year: req.params.year }}}
+        ]})
+        .sort({year: 1, title: 1})
         .populate('casts.actor')
         .exec(function(err, movies){
             if(err || !movies) res.json({data: null, success: false});
             else res.json({
+                keyword: {
+                    genre: genreQ,
+                    year: yearQ
+                },
                 data: {
+                    movie_total: movies.length,
                     movies: movies
                 },
                 success: true
@@ -166,4 +184,210 @@ exports.genre_year = function(req, res) {
         });
 };
 
+/**
+ * Genre
+ * SC4: Detailed movie information
+ */
+// TODO: Check check check with real data
+// TODO: Implement year range filter
+exports.genre_year_range = function(req, res) {
 
+    var genreQ = req.params.genre;
+
+    // Check order of year
+    var yFrom;
+    var yTo;
+
+    if (req.params.yfrom > req.params.yto) {
+        yFrom = req.params.yto;
+        yTo = req.params.yfrom;
+    }
+    else {
+        yFrom = req.params.yfrom;
+        yTo = req.params.yto;
+    }
+
+    Movie.find({ genres: req.params.genre, $or: [
+        { year: {
+            $gte: yFrom,
+            $lte: yTo
+        }},
+        { aka_titles: { "$elemMatch" : { year: {
+            $gte: yFrom,
+            $lte: yTo
+        } }}}
+    ]})
+        .sort({year: 1, title: 1})
+        .populate('casts.actor')
+        .exec(function(err, movies){
+            if(err || !movies) res.json({data: null, success: false});
+            else res.json({
+                keyword: {
+                    genre: genreQ,
+                    year_start: yFrom,
+                    year_end: yTo
+                },
+                data: {
+                    movie_total: movies.length,
+                    movies: movies
+                },
+                success: true
+            });
+        });
+};
+
+// Function for distinct array
+function uniq(a) {
+    return a.sort().filter(function(item, pos, ary) {
+        return !pos || item != ary[pos - 1];
+    })
+}
+
+/**
+ * Genre
+ * SC5: Genre statistics
+ */
+// TODO: Check check check with real data
+exports.genre_stats = function(req, res) {
+
+    var keyword = req.params.year;
+
+    var query = Movie.find({ $or: [
+        { year: keyword},
+        { aka_titles: { "$elemMatch" : { year: keyword }}}
+    ]});
+    query.sort({year: 1, title: 1});
+    query.exec(function(err, movies){
+            if(err || !movies) res.json({data: null, success: false});
+            else {
+                var moviesTotal = movies.length;
+                var genres = [];
+                _.map(movies, function(num){
+                    var gen = num.genres;
+                    _.map(gen, function(nim){
+                        genres.push(nim);
+                    });
+                    genres = uniq(genres);
+                });
+                var l;
+
+                // TODO: Passing length tiap genre (l)
+                var result = _.map(genres, function(num){
+
+                    var q = Movie.find({genres: num,$or: [
+                        { year: keyword},
+                        { aka_titles: { "$elemMatch" : { year: keyword }}}
+                    ]});
+                    q.exec(function(err1, mov){
+                        if(err1 || !mov) res.json({data: null, success: false});
+                        else {
+                            l = mov.length;
+                        }
+                    });
+                    return {
+                        name: num,
+                        total_mov: l
+                    };
+                });
+                res.json({
+                    keyword: keyword,
+                    data: {
+                        movie_total: moviesTotal,
+                        genres: result,
+                        total_genres: genres.length
+                    },
+                    success: true
+                });
+            }
+        });
+};
+
+
+/**
+ * Genre
+ * SC5: Genre statistics with range
+ */
+// TODO: Check check check with real data
+// TODO: Implement year range filter
+exports.genre_stats_range = function(req, res) {
+    // Check order of year
+    // Check order of year
+    var yFrom;
+    var yTo;
+
+    if (req.params.yfrom > req.params.yto) {
+        yFrom = req.params.yto;
+        yTo = req.params.yfrom;
+    }
+    else {
+        yFrom = req.params.yfrom;
+        yTo = req.params.yto;
+    }
+
+    var query = Movie.find({ $or: [
+        { year: {
+            $gte: yFrom,
+            $lte: yTo
+        }},
+        { aka_titles: { "$elemMatch" : { year: {
+            $gte: yFrom,
+            $lte: yTo
+        } }}}
+    ]});
+    query.sort({year: 1, title: 1});
+
+    query.exec(function(err, movies){
+        if(err || !movies) res.json({data: null, success: false});
+        else {
+            var moviesTotal = movies.length;
+            var genres = [];
+            _.map(movies, function(num){
+                var gen = num.genres;
+                _.map(gen, function(nim){
+                    genres.push(nim);
+                });
+                genres = uniq(genres);
+            });
+            var l;
+
+            // TODO: Passing length
+            var result = _.map(genres, function(num){
+
+                var q = Movie.find({genres: num,$or: [
+                    { year: {
+                        $gte: yFrom,
+                        $lte: yTo
+                    }},
+                    { aka_titles: { "$elemMatch" : { year: {
+                        $gte: yFrom,
+                        $lte: yTo
+                    } }}}
+                ]});
+                q.exec(function(err1, mov){
+                    if(err1 || !mov) res.json({data: null, success: false});
+                    else {
+                        l = mov.length;
+                    }
+                });
+                return {
+                    name: num,
+                    total_mov: l
+                };
+            });
+
+            res.json({
+                keyword: {
+                    year_start: yFrom,
+                    year_end: yTo
+                },
+                data: {
+                    movies_total: moviesTotal,
+                    genre: result,
+                    genres_total: genres.length
+
+                },
+                success: true
+            });
+        }
+    });
+};
