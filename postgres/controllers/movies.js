@@ -7,6 +7,7 @@ var models  = require('../models'),
     chalk = require('chalk'),
     _ = require('underscore');
 
+
 /**
  * Index
  */
@@ -71,18 +72,30 @@ exports.update = function(req, res) {
  * List
  */
 exports.list = function(req, res) {
-    models.Movie.findAll({
-        //attributes: ['title']
-        limit: 10
-    }).then(function(movies) {
-        if(!movies) res.json({ data: null, success: false });
-        else res.json({
-            data: {
-                movies: movies,
-            },
-            success: true
+    sequelize.query("SELECT * FROM `movies`", { raw: true, type: 'SELECT'})
+        .then(function(movies) {
+            console.log(movies);
+
+        //    res.json({
+        //        data: {
+        //            movie: movies
+        //        },
+        //        success: true});
+
         });
-    })
+
+    //models.Movie.findAll({
+    //    //attributes: ['title']
+    //    limit: 10
+    //}).then(function(movies) {
+    //    if(!movies) res.json({ data: null, success: false });
+    //    else res.json({
+    //        data: {
+    //            movies: movies,
+    //        },
+    //        success: true
+    //    });
+    //})
 
     /*
     Movie.find({}, function(err, movies){
