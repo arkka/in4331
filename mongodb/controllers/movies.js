@@ -237,11 +237,11 @@ exports.genre_year_range = function(req, res) {
 };
 
 // Function for distinct array
-function uniq(a) {
-    return a.sort().filter(function(item, pos, ary) {
-        return !pos || item != ary[pos - 1];
-    })
-}
+//function uniq(a) {
+//    return a.sort().filter(function(item, pos, ary) {
+//        return !pos || item != ary[pos - 1];
+//    })
+//}
 
 /**
  * Genre
@@ -267,34 +267,14 @@ exports.genre_stats = function(req, res) {
                     _.map(gen, function(nim){
                         genres.push(nim);
                     });
-                    genres = uniq(genres);
-                });
-                var l;
-
-                // TODO: Passing length tiap genre (l)
-                var result = _.map(genres, function(num){
-
-                    var q = Movie.find({genres: num,$or: [
-                        { year: keyword},
-                        { aka_titles: { "$elemMatch" : { year: keyword }}}
-                    ]});
-                    q.exec(function(err1, mov){
-                        if(err1 || !mov) res.json({data: null, success: false});
-                        else {
-                            l = mov.length;
-                        }
-                    });
-                    return {
-                        name: num,
-                        total_mov: l
-                    };
+                    genres = genres.sort();
                 });
                 res.json({
                     keyword: keyword,
                     data: {
                         movie_total: moviesTotal,
-                        genres: result,
-                        total_genres: genres.length
+                        genre: _.countBy(genres, function(num) { return num; }),
+                        total_genres: _.uniq(genres).length
                     },
                     success: true
                 });
@@ -346,7 +326,7 @@ exports.genre_stats_range = function(req, res) {
                 _.map(gen, function(nim){
                     genres.push(nim);
                 });
-                genres = uniq(genres);
+                genres = genres.sort();
             });
             
             res.json({
@@ -357,7 +337,7 @@ exports.genre_stats_range = function(req, res) {
                 data: {
                     movies_total: moviesTotal,
                     genre: _.countBy(genres, function(num) { return num; }),
-                    genres_total: genres.length
+                    genres_total: _.uniq(genres).length
 
                 },
                 success: true
