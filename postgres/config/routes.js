@@ -15,13 +15,13 @@ module.exports = function(app) {
         .get(movies.list)
         .get(movies.read);
 
-    //app.route('/movies/:movieId')
-    //    .get(movies.read)
-    //    .post(movies.update);
-    //
-    //app.route('/movies/search/:keyword')
-    //    .get(movies.search);
-    //
+    app.route('/movies/:movieId')
+        .get(movies.read)
+        .post(movies.update);
+
+    app.route('/movies/search/:keyword')
+        .get(movies.search);
+
     //app.route('/movies/explore/:genre')
     //    .get(movies.genre);
     //

@@ -1,5 +1,5 @@
 module.exports = {
 
-    postgres: 'postgres://localhost:5432/wdm',
+    postgres: 'postgres://postgres@localhost:5432/wdm',
 
 }

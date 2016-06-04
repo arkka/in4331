@@ -7,6 +7,10 @@ var models  = require('../models'),
     chalk = require('chalk'),
     _ = require('underscore');
 
+var config = require('../config/config')
+var Sequelize = require('sequelize');
+var sequelize = new Sequelize(config.postgres);
+
 
 /**
  * Index
@@ -72,36 +76,21 @@ exports.update = function(req, res) {
  * List
  */
 exports.list = function(req, res) {
-    sequelize.query("SELECT * FROM `movies`", { raw: true, type: 'SELECT'})
-        .then(function(movies) {
-            console.log(movies);
+    var query = "SELECT * FROM  movies AS cuy limit 5";
 
-        //    res.json({
-        //        data: {
-        //            movie: movies
-        //        },
-        //        success: true});
+    sequelize.query(query).spread(function(movies, metadata) {
+        //sequelize.query("select * from")
+        //sequelize.query("select distinct * from movies join acted_in on movies.idmovies = acted_in.idmovies where movies.idmovies = 2354").spread(function(results, metadata) {
 
         });
-
-    //models.Movie.findAll({
-    //    //attributes: ['title']
-    //    limit: 10
-    //}).then(function(movies) {
-    //    if(!movies) res.json({ data: null, success: false });
-    //    else res.json({
-    //        data: {
-    //            movies: movies,
-    //        },
-    //        success: true
-    //    });
-    //})
-
-    /*
-    Movie.find({}, function(err, movies){
-     movies_by_year: _.groupBy(movies, function(num){ return num.year; })
-    });
-    */
+        res.json({
+            data: {
+                movies: movies,
+                movies_by_year: _.groupBy(movies, function(num){ return num.year; })
+            },
+            success: true
+        });
+    })
 };
 
 /**
@@ -109,40 +98,30 @@ exports.list = function(req, res) {
  * SC1: Detailed movie information
  */
 exports.search = function(req, res) {
-    /*
-    // Get variable for url parameter: keyword
     var keyword = req.params.keyword;
+    var queryString;
 
-    var query;
-
-    // To differentiate whether the keyword is ObjectId or word
-    if( keyword.length >= 12) {
-        query = Movie.find({ $or: [
-            { _id  : new ObjectId(keyword) },
-            { title : new RegExp(keyword, 'i')},
-            { aka_titles: { "$elemMatch" : { title: new RegExp(keyword, 'i') }}}
-        ]});
-    } else {
-        query = Movie.find({ $or: [
-            { title : new RegExp(keyword, 'i')},
-            { aka_titles: { "$elemMatch" : { title: new RegExp(keyword, 'i') }}}
-        ]});
+    if (!isNaN(keyword)){
+        //queryString = "SELECT * FROM movies WHERE (idmovies = '"+keyword+"' OR title LIKE '"+keyword+"')";
+        queryString = "SELECT movies.*, aka_titles.title AS aka_title FROM movies full join aka_titles on movies.idmovies = aka_titles.idmovies WHERE (movies.idmovies = '"+keyword+"' OR movies.title LIKE '"+keyword+"')";
     }
+    else{
+        queryString = "SELECT movies.*, aka_titles.title AS aka_title FROM movies  full join aka_titles on movies.idmovies = aka_titles.idmovies WHERE movies.title LIKE '"+keyword+"'";
+    }
+    //queryString = "SELECT * FROM movies WHERE movies.title LIKE '"+keyword+"'";
 
-    query.exec(function(err, movies){
-        if(err || !movies ) res.json({data: null, success: false});
-        else {
-            res.json({
-                keyword: keyword,
-                data: {
-                    movies: movies,
-                    movies_by_year: _.groupBy(movies, function(num){ return num.year; })
-                },
-                success: true
-            });
-        }
+
+    sequelize.query(queryString).spread(function(movies, metadata) {
+        //sequelize.query("select distinct * from movies join acted_in on movies.idmovies = acted_in.idmovies where movies.idmovies = 2354").spread(function(results, metadata) {
+        res.json({
+            data: {
+                movies: movies,
+                movies_by_year: _.groupBy(movies, function(num){ return num.year; })
+            },
+            success: true
+        });
+        // Results will be an empty array and metadata will contain the number of affected rows.
     });
-    */
 };
 
 
