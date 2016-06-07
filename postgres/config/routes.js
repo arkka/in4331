@@ -12,8 +12,8 @@ module.exports = function(app) {
 
     app.route('/movies')
         .put(movies.create)
-        .get(movies.list)
-        .get(movies.read);
+        .get(movies.list);
+        //.get(movies.read);
 
     app.route('/movies/:movieId')
         .get(movies.read)
@@ -38,11 +38,11 @@ module.exports = function(app) {
     //    .get(movies.genre_stats_range);
     //
     //
-    //app.route('/actors')
-    //    .put(actors.create)
-    //    .get(actors.list)
-    //    .get(actors.read);
-    //
+    app.route('/actors')
+        .put(actors.create)
+        .get(actors.list);
+        //.get(actors.read);
+
     //app.route('/actors/:actorId')
     //    .get(actors.read)
     //    .post(actors.update);
