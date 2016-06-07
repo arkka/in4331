@@ -40,20 +40,30 @@ exports.create = function(req, res) {
 };
 
 /**
- * Read
+ * Read based on idmovies
  */
 exports.read = function(req, res) {
-    /*
-    Movie.findById(req.params.movieId, function(err, movie){
-        if(err || !movie) res.json({data: null, success: false});
-        else res.json({
+    var keyword = req.params.movieId;
+
+    //queryString = "SELECT movies.*, aka_titles.title AS aka_title FROM movies full join aka_titles on movies.idmovies = aka_titles.idmovies WHERE (movies.idmovies = '"+keyword+"' OR movies.title LIKE '"+keyword+"')";
+
+    var queryString = "SELECT movies.*, aka_titles.title AS aka_title, aka_titles.location AS location," +
+        "aka_titles.year AS year FROM movies join aka_titles on movies.idmovies = aka_titles.idmovies WHERE (movies.idmovies = '" + keyword + "')";
+
+    sequelize.query(queryString).spread(function(movies, metadata) {
+
+        res.json({
+            keyword: keyword,
             data: {
-                movie: movie,
+                movies: movies,
+                movies_by_year: _.groupBy(movies, function(num){ return num.year; })
             },
             success: true
         });
+        // Results will be an empty array and metadata will contain the number of affected rows.
     });
-    */
+
+
 };
 
 /**
@@ -76,13 +86,11 @@ exports.update = function(req, res) {
  * List
  */
 exports.list = function(req, res) {
-    var query = "SELECT * FROM  movies AS cuy limit 5";
+    var query = "SELECT * FROM  movies AS cuy limit 10";
 
     sequelize.query(query).spread(function(movies, metadata) {
         //sequelize.query("select * from")
         //sequelize.query("select distinct * from movies join acted_in on movies.idmovies = acted_in.idmovies where movies.idmovies = 2354").spread(function(results, metadata) {
-
-        });
         res.json({
             data: {
                 movies: movies,
@@ -90,7 +98,7 @@ exports.list = function(req, res) {
             },
             success: true
         });
-    })
+    });
 };
 
 /**
@@ -114,6 +122,7 @@ exports.search = function(req, res) {
     sequelize.query(queryString).spread(function(movies, metadata) {
         //sequelize.query("select distinct * from movies join acted_in on movies.idmovies = acted_in.idmovies where movies.idmovies = 2354").spread(function(results, metadata) {
         res.json({
+            keyword: keyword,
             data: {
                 movies: movies,
                 movies_by_year: _.groupBy(movies, function(num){ return num.year; })
