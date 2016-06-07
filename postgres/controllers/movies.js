@@ -42,24 +42,68 @@ exports.create = function(req, res) {
 /**
  * Read based on idmovies
  */
+// TODO: combine multiple genres, keywords, actors, to one result
+// TODO: series and actors acted in
+
+Array.prototype.uniqueObjects = function (props) {
+    function compare(a, b) {
+        var prop;
+        if (props) {
+            for (var j = 0; j < props.length; j++) {
+                prop = props[j];
+                if (a[prop] != b[prop]) {
+                    return false;
+                }
+            }
+        } else {
+            for (prop in a) {
+                if (a[prop] != b[prop]) {
+                    return false;
+                }
+            }
+
+        }
+        return true;
+    }
+    return this.filter(function (item, index, list) {
+        for (var i = 0; i < index; i++) {
+            if (compare(item, list[i])) {
+                return false;
+            }
+        }
+        return true;
+    });
+};
+
 exports.read = function(req, res) {
     var keyword = req.params.movieId;
 
-    var queryString = "SELECT movies.*, aka_titles.title AS aka_title, aka_titles.location AS location, aka_titles.year AS year, genres.genre AS genre " +
+    var queryString = "SELECT movies.*, aka_titles.title AS aka_title, aka_titles.location AS location, aka_titles.year AS year, genres.genre AS genre, keywords.keyword AS movie_keyword " +
         "FROM movies " +
-        "JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
-        "JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
-        "JOIN genres ON  movies_genres.idgenres = genres.idgenres " +
-        //"join genres on movie" +
+        "LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
+        "LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
+        "LEFT JOIN genres ON movies_genres.idgenres = genres.idgenres " +
+        "LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
+        "LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
         "WHERE (movies.idmovies = '" + keyword + "')";
 
     sequelize.query(queryString).spread(function(movies, metadata) {
 
+        var keywords = _.uniq(_.map(movies, function(num){ return num.movie_keyword}));
+        var genres = _.uniq(_.map(movies, function(num){ return num.genre}));
+
+        _.map(movies, function(num){ num.movie_keyword = keywords});
+        _.map(movies, function(num){ num.genre = genres});
+
+        var result = movies.uniqueObjects(["aka_title"]);
+
         res.json({
             keyword: keyword,
+            count: result.length,
             data: {
-                movies: movies,
-                movies_by_year: _.groupBy(movies, function(num){ return num.year; })
+                //movies: _.map(movies, function(num){ return num.movie_keyword}),
+                movies: result,
+                movies_by_year: _.groupBy(result, function(num){ return num.year; })
             },
             success: true
         });
@@ -119,8 +163,6 @@ exports.search = function(req, res) {
     else{
         queryString = "SELECT movies.*, aka_titles.title AS aka_title FROM movies  full join aka_titles on movies.idmovies = aka_titles.idmovies WHERE movies.title LIKE '"+keyword+"'";
     }
-    //queryString = "SELECT * FROM movies WHERE movies.title LIKE '"+keyword+"'";
-
 
     sequelize.query(queryString).spread(function(movies, metadata) {
         //sequelize.query("select distinct * from movies join acted_in on movies.idmovies = acted_in.idmovies where movies.idmovies = 2354").spread(function(results, metadata) {
