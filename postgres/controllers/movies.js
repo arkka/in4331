@@ -7,7 +7,7 @@ var models  = require('../models'),
     chalk = require('chalk'),
     _ = require('underscore');
 
-var config = require('../config/config')
+var config = require('../config/config');
 var Sequelize = require('sequelize');
 var sequelize = new Sequelize(config.postgres);
 
@@ -45,10 +45,13 @@ exports.create = function(req, res) {
 exports.read = function(req, res) {
     var keyword = req.params.movieId;
 
-    //queryString = "SELECT movies.*, aka_titles.title AS aka_title FROM movies full join aka_titles on movies.idmovies = aka_titles.idmovies WHERE (movies.idmovies = '"+keyword+"' OR movies.title LIKE '"+keyword+"')";
-
-    var queryString = "SELECT movies.*, aka_titles.title AS aka_title, aka_titles.location AS location," +
-        "aka_titles.year AS year FROM movies join aka_titles on movies.idmovies = aka_titles.idmovies WHERE (movies.idmovies = '" + keyword + "')";
+    var queryString = "SELECT movies.*, aka_titles.title AS aka_title, aka_titles.location AS location, aka_titles.year AS year, genres.genre AS genre " +
+        "FROM movies " +
+        "JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
+        "JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
+        "JOIN genres ON  movies_genres.idgenres = genres.idgenres " +
+        //"join genres on movie" +
+        "WHERE (movies.idmovies = '" + keyword + "')";
 
     sequelize.query(queryString).spread(function(movies, metadata) {
 
