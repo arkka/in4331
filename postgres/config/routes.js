@@ -31,13 +31,13 @@ module.exports = function(app) {
     app.route('/movies/explore/:genre/:yfrom/:yto')
         .get(movies.genre_year_range);
 
-    //app.route('/movies/stats/:year')
-    //    .get(movies.genre_stats);
-    //
+    app.route('/movies/stats/:year')
+        .get(movies.genre_stats);
+
     //app.route('/movies/stats/:yfrom/:yto')
     //    .get(movies.genre_stats_range);
-    //
-    //
+
+
     app.route('/actors')
         .put(actors.create)
         .get(actors.list);

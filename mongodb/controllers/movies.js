@@ -272,10 +272,10 @@ exports.genre_stats = function(req, res) {
                 });
                 res.json({
                     keyword: keyword,
+                    total_genres: _.uniq(genres).length,
+                    movie_total: moviesTotal,
                     data: {
-                        movie_total: moviesTotal,
-                        genre: _.countBy(genres, function(num) { return num; }),
-                        total_genres: _.uniq(genres).length
+                        genre: _.countBy(genres, function(num) { return num; })
                     },
                     success: true
                 });

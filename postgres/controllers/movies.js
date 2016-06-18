@@ -11,21 +11,10 @@ var config = require('../config/config');
 var Sequelize = require('sequelize');
 var sequelize = new Sequelize(config.postgres);
 
-//var queryString = "SELECT movies.*, aka_titles.title AS aka_title, COALESCE(aka_titles.location,movies.location) AS location, COALESCE(aka_titles.year,movies.year) AS year, aka_titles.idaka_titles AS idaka_title, " +
-//"genres.genre AS genres, keywords.keyword AS keywords, " +
-//"COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS casts " +
-//"FROM movies " +
-//"LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
-//"LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
-//"LEFT JOIN genres ON movies_genres.idgenres = genres.idgenres " +
-//"LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
-//"LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
-//"LEFT JOIN acted_in ON movies.idmovies = acted_in.idmovies " +
-//"LEFT JOIN actors ON acted_in.idactors = actors.idactors ";
-
 var queryString = "SELECT movies.idmovies, movies.title, movies.number, movies.type, movies.language, aka_titles.title AS aka_title, COALESCE(aka_titles.location,movies.location) AS movie_location, COALESCE(aka_titles.year,movies.year) AS movie_year, " +
     "array_agg(genres.genre) AS genres, array_agg(keywords.keyword) AS keywords, " +
-    "array_agg(COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ')) AS casts " +
+    "array_agg(COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ')) AS castname, " +
+    "array_agg(acted_in.character) AS cast_characters, array_agg(acted_in.billing_position) AS cast_billing_positions, array_agg(acted_in.idactors) AS cast_actors " +
     "FROM movies " +
     "LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
     "LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
@@ -126,20 +115,43 @@ exports.read = function(req, res) {
 
     sequelize.query(query).spread(function(movies, metadata) {
 
-        //var keywords = _.uniq(_.map(movies, function(num){ return num.keywords}));
-        //var genres = _.uniq(_.map(movies, function(num){ return num.genres}));
-        //var casts = _.uniq(_.map(movies, function(num){ return num.casts}));
-        //
-        //_.map(movies, function(num){ num.keywords = keywords.sort()});
-        //_.map(movies, function(num){ num.genres = genres.sort()});
-        //_.map(movies, function(num){ num.casts = casts.sort()});
-
-        // TODO: Separate null for idaka_title
-        //var result = movies.uniqueObjects(["idaka_title"]);
-
         _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
         _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
-        _.map(movies, function(num){ num.casts = _.uniq(num.casts).sort()});
+
+        var casts = [];
+
+        _.map(movies, function(movie){
+            _.each(movie.castname, function(el, idx, ls) {
+                casts[idx] = {
+                    actor_id: movie.cast_actors[idx],
+                    name: movie.castname[idx],
+                    character: movie.cast_characters[idx],
+                    billing_position: movie.cast_billing_positions[idx]
+                }
+
+            });
+
+            var uniques = _.map(_.groupBy(casts,function(doc){
+                if (doc.character!= null) {
+                    return doc.character;
+                }
+                else{
+                    return doc.actor_id;
+                }
+            }),function(grouped){
+                return grouped[0];
+            });
+
+            var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
+
+            movie.casts = uniqsort;
+
+            // delete processed cast
+            delete movie.castname;
+            delete movie.cast_characters;
+            delete movie.cast_billing_positions;
+            delete movie.cast_actors;
+        });
 
         res.json({
             keyword: keyword,
@@ -199,27 +211,50 @@ exports.search = function(req, res) {
 
         // line below for ignore case (slow performance)
         query = queryString + "WHERE lower(movies.title) LIKE lower('%" + keyword + "%') OR lower(aka_titles.title) LIKE lower('%" + keyword + "%') " +
-            "GROUP BY movies.idmovies, aka_title, movie_location, movie_year " +
-            "ORDER BY movies.title";
+            "GROUP BY movies.idmovies, aka_title, movie_location, movie_year ";
+            //+ "ORDER BY movies.title";
     }
 
     sequelize.query(query).spread(function(movies, metadata) {
 
-        //var keywords = _.uniq(_.map(movies, function(num){ return num.keywords}));
-        //var genres = _.uniq(_.map(movies, function(num){ return num.genres}));
-        //var casts = _.uniq(_.map(movies, function(num){ return num.casts}));
-
-        // TODO: idmovie as keys and different value for partial match
-        //_.map(movies, function(num){ num.keywords = keywords.sort()});
-        //_.map(movies, function(num){ num.genres = genres.sort()});
-        //_.map(movies, function(num){ num.casts = casts.sort()});
-
-        // TODO: Separate null for idaka_title
-        //var result = movies.uniqueObjects(["idaka_title"]);
-
         _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
         _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
-        _.map(movies, function(num){ num.casts = _.uniq(num.casts).sort()});
+
+        var casts = [];
+
+        _.map(movies, function(movie){
+            _.each(movie.castname, function(el, idx, ls) {
+                casts[idx] = {
+                    actor_id: movie.cast_actors[idx],
+                    name: movie.castname[idx],
+                    character: movie.cast_characters[idx],
+                    billing_position: movie.cast_billing_positions[idx]
+                }
+
+            });
+
+            var uniques = _.map(_.groupBy(casts,function(doc){
+                if (doc.character!= null) {
+                    return doc.character;
+                }
+                else{
+                    return doc.actor_id;
+                }
+            }),function(grouped){
+                return grouped[0];
+            });
+
+            var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
+
+            movie.casts = uniqsort;
+
+            // delete processed cast
+            delete movie.castname;
+            delete movie.cast_characters;
+            delete movie.cast_billing_positions;
+            delete movie.cast_actors;
+        });
+
 
         res.json({
             keyword: keyword,
@@ -383,6 +418,19 @@ exports.genre_year_range = function(req, res) {
         });
         // Results will be an empty array and metadata will contain the number of affected rows.
     });
+
+};
+
+
+/**
+ * Genre
+ * SC5: Genre statistics
+ */
+// TODO: Check check check with real data
+exports.genre_stats = function(req, res) {
+
+    var keyword = req.params.year;
+
 
 
 };
