@@ -335,11 +335,10 @@ exports.genre_stats_range = function(req, res) {
                     year_start: yFrom,
                     year_end: yTo
                 },
+                total_genres: _.uniq(genres).length,
+                //movies_total: moviesTotal,
                 data: {
-                    movies_total: moviesTotal,
-                    genre: _.countBy(genres, function(num) { return num; }),
-                    genres_total: _.uniq(genres).length
-
+                    genre: _.countBy(genres, function(num) { return num; })
                 },
                 success: true
             });

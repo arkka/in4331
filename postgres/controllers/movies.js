@@ -502,7 +502,7 @@ exports.genre_year_range = function(req, res) {
 exports.genre_stats = function(req, res) {
     var keyword = req.params.year;
 
-    var query = "SELECT distinct genres.genre, count(genres.genre) as movie_count " +
+    var query = "SELECT DISTINCT genres.genre, count(genres.genre) as movie_count " +
         "FROM movies " +
         "LEFT JOIN movies_genres on movies_genres.idmovies = movies.idmovies " +
         "LEFT JOIN genres on genres.idgenres = movies_genres.idgenres " +
@@ -518,10 +518,58 @@ exports.genre_stats = function(req, res) {
         res.json({
             keyword: keyword,
             total_genres: genres.length,
-            //movie_total: moviesTotal,
             data: genres,
             success: true
         });
+        // Results will be an empty array and metadata will contain the number of affected rows.
+    });
+
+};
+
+/**
+ * Genre
+ * SC5: Genre statistics with range
+ */
+// TODO: Check check check with real data
+// TODO: Implement year range filter
+exports.genre_stats_range = function(req, res) {
+    // Check order of year
+    // Check order of year
+    var yFrom;
+    var yTo;
+
+    if (req.params.yfrom > req.params.yto) {
+        yFrom = req.params.yto;
+        yTo = req.params.yfrom;
+    }
+    else {
+        yFrom = req.params.yfrom;
+        yTo = req.params.yto;
+    }
+
+    var query = "SELECT DISTINCT genres.genre, count(genres.genre) as movie_count " +
+        "FROM movies " +
+        "LEFT JOIN movies_genres on movies_genres.idmovies = movies.idmovies " +
+        "LEFT JOIN genres on genres.idgenres = movies_genres.idgenres " +
+        "WHERE movies.year BETWEEN " + yFrom + " AND " + yTo + " " +
+        "GROUP BY genres.genre " +
+        "ORDER BY genres.genre";
+
+    sequelize.query(query).spread(function(genres, metadata) {
+
+        // Delete genre with null value
+        genres = _.reject(genres, function(d){ return d.genre == null; });
+
+        res.json({
+            keyword: {
+                year_start: yFrom,
+                year_end: yTo
+            },
+            total_genres: genres.length,
+            data: genres,
+            success: true
+        });
+
         // Results will be an empty array and metadata will contain the number of affected rows.
     });
 
