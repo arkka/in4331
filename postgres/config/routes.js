@@ -54,6 +54,6 @@ module.exports = function(app) {
     //app.route('/actors/stats/:keyword')
     //    .get(actors.stats);
 
-    app.route('/dump/mongodb')
+    app.route('/dump/mongodb/:collection/:id')
         .get(dump.mongodb);
 };
