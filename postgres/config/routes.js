@@ -23,22 +23,22 @@ module.exports = function(app) {
     app.route('/movies/search/:keyword')
         .get(movies.search);
 
-    //app.route('/movies/explore/:genre')
-    //    .get(movies.genre);
-    //
-    //app.route('/movies/explore/:genre/:year')
-    //    .get(movies.genre_year);
-    //
-    //app.route('/movies/explore/:genre/:yfrom/:yto')
-    //    .get(movies.genre_year_range);
-    //
-    //app.route('/movies/stats/:year')
-    //    .get(movies.genre_stats);
-    //
-    //app.route('/movies/stats/:yfrom/:yto')
-    //    .get(movies.genre_stats_range);
-    //
-    //
+    app.route('/movies/explore/:genre')
+        .get(movies.genre);
+
+    app.route('/movies/explore/:genre/:year')
+        .get(movies.genre_year);
+
+    app.route('/movies/explore/:genre/:yfrom/:yto')
+        .get(movies.genre_year_range);
+
+    app.route('/movies/stats/:year')
+        .get(movies.genre_stats);
+
+    app.route('/movies/stats/:yfrom/:yto')
+        .get(movies.genre_stats_range);
+
+
     app.route('/actors')
         .put(actors.create)
         .get(actors.list);
