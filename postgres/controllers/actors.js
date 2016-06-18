@@ -161,25 +161,31 @@ exports.search = function (req, res){
     } else if(keyword.indexOf(" ")>-1){
         // Could be firstname + lastname
         var arr = keyword.split(" ");
+
+        // Handling name more than 2 words (example: Stefanie von Poser, with von Poser being the last name)
+        if (arr.length > 2) {
+            for (var i = 2; i < arr.length; i++){
+                arr[1] += " " + arr[i];
+            }
+        }
+
         if ((arr[0].length >0)&&(arr[0].length >0)){
             // firstname and lastname
             queryString = "SELECT actors.*, acted_in.character, acted_in.idmovies, acted_in.billing_position, aka_names.name AS aka_name, movies.title, movies.year FROM actors " +
                 "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
-                "LEFT JOIN acted_in on actors.idactors = acted_in.idactors "+
-                "LEFT JOIN movies on acted_in.idmovies = movies.idmovies "+
+                "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
+                "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
                 "WHERE (actors.fname LIKE '"+arr[0]+"' AND actors.lname LIKE '"+arr[1]+"') OR (actors.fname LIKE '"+arr[1]+"' AND actors.lname LIKE '"+arr[0]+"') " +
                 "OR (actors.fname LIKE '" +arr[0]+ " " + arr[1] + "') OR (actors.lname LIKE '" +arr[0]+ " " + arr[1] + "')";
         }
     }
     else
     {
-        //queryString = "SELECT * FROM movies WHERE movies.title LIKE '"+keyword+"'";
-        //SELECT actors.*, aka_names.name AS aka_name FROM actors full join aka_names on actors.idactors = aka_names.idactors WHERE (actors.fname LIKE 'Lucienne' OR actors.lname LIKE 'Lucienne')
-        //queryString = "SELECT actors.*, aka_names.name AS aka_name FROM actors  full join aka_names on actors.idactors = aka_names.idactors WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"'";
-        queryString = "SELECT distinct actors.*, aka_names.name AS aka_name, movies.title, movies.year FROM actors join aka_names on actors.idactors = aka_names.idactors" +
-            " join acted_in on actors.idactors = acted_in.idactors"+
-            " join movies on acted_in.idmovies = movies.idmovies"+
-            " WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"'";
+        queryString = "SELECT actors.*, acted_in.character, acted_in.idmovies, acted_in.billing_position, aka_names.name AS aka_name, movies.title, movies.year FROM actors " +
+            "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
+            "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
+            "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
+            "WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"'";
     }
 
     sequelize.query(queryString).spread(function(actors, metadata) {
@@ -207,39 +213,54 @@ exports.stats = function (req, res){
     var queryString;
 
     if (!isNaN(keyword)){
-        //queryString = "SELECT * FROM movies WHERE (idmovies = '"+keyword+"' OR title LIKE '"+keyword+"')";
-        queryString = "SELECT distinct actors.idactors, actors.fname,actors.lname, count(movies.idmovies) AS Movie_count FROM actors join aka_names on actors.idactors = aka_names.idactors" +
-            " join acted_in on actors.idactors = acted_in.idactors"+
-            " join movies on acted_in.idmovies = movies.idmovies"+
-            " WHERE (actors.idactors = '"+keyword+"' OR actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"')"+
-            " GRoup by actors.idactors";
-    }else if(keyword.indexOf(" ")>-1){
+        queryString = "SELECT COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS name, " +
+            "COUNT(DISTINCT acted_in.idmovies) as num_movies " +
+            "FROM acted_in " +
+            "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
+            "WHERE actors.idactors = '"+keyword+"' OR actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
+            "GROUP BY actors.idactors";
+
+    } else if(keyword.indexOf(" ")>-1){
         // Could be firstname + lastname
         var arr = keyword.split(" ");
+
+        // Handling name more than 2 words (example: Stefanie von Poser, with von Poser being the last name)
+        if (arr.length > 2) {
+            for (var i = 2; i < arr.length; i++){
+                arr[1] += " " + arr[i];
+            }
+        }
+
         if ((arr[0].length >0)&&(arr[0].length >0)){
             // firstname and lastname
-            queryString = "SELECT distinct actors.idactors, actors.fname,actors.lname, count(movies.idmovies) AS Movie_count FROM actors join aka_names on actors.idactors = aka_names.idactors" +
-                " join acted_in on actors.idactors = acted_in.idactors"+
-                " join movies on acted_in.idmovies = movies.idmovies"+
-                " WHERE (actors.fname LIKE '"+arr[0]+"' AND actors.lname LIKE '"+arr[1]+"')OR(actors.fname LIKE '"+arr[1]+"' AND actors.lname LIKE '"+arr[0]+"')"+
-                " GRoup by actors.idactors";
+            queryString = "SELECT COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS name, " +
+                "COUNT(DISTINCT acted_in.idmovies) as num_movies " +
+                "FROM acted_in " +
+                "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
+                "WHERE (actors.fname LIKE '"+arr[0]+"' AND actors.lname LIKE '"+arr[1]+"') OR (actors.fname LIKE '"+arr[1]+"' AND actors.lname LIKE '"+arr[0]+"') " +
+                "OR (actors.fname LIKE '" +arr[0]+ " " + arr[1] + "') OR (actors.lname LIKE '" +arr[0]+ " " + arr[1] + "') " +
+                "GROUP BY actors.idactors";
         }
     }
     else
     {
-        //queryString = "SELECT * FROM movies WHERE movies.title LIKE '"+keyword+"'";
-        //SELECT actors.*, aka_names.name AS aka_name FROM actors full join aka_names on actors.idactors = aka_names.idactors WHERE (actors.fname LIKE 'Lucienne' OR actors.lname LIKE 'Lucienne')
-        //queryString = "SELECT actors.*, aka_names.name AS aka_name FROM actors  full join aka_names on actors.idactors = aka_names.idactors WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"'";
-        queryString = "SELECT distinct actors.idactors, actors.fname,actors.lname, count(movies.idmovies) AS Movie_count FROM actors join aka_names on actors.idactors = aka_names.idactors" +
-            " join acted_in on actors.idactors = acted_in.idactors"+
-            " join movies on acted_in.idmovies = movies.idmovies"+
-            " WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"'"+
-            " GRoup by actors.idactors";
+      queryString = "SELECT COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS name, " +
+            "COUNT(DISTINCT acted_in.idmovies) as num_movies " +
+            "FROM acted_in " +
+            "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
+            "WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
+            "Group by actors.idactors";
     }
 
-    sequelize.query(queryString).spread(function(results, metadata) {
-        //sequelize.query("select distinct * from movies join acted_in on movies.idmovies = acted_in.idmovies where movies.idmovies = 2354").spread(function(results, metadata) {
-        res.json(results);
+    sequelize.query(queryString).spread(function(actors, metadata) {
+        res.json({
+            keyword: keyword,
+            count: actors.length,
+            data: {
+                actors: actors
+            },
+            success: true
+        });
         // Results will be an empty array and metadata will contain the number of affected rows.
     });
 };

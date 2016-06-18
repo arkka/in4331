@@ -114,7 +114,7 @@ exports.search = function(req, res) {
         if(err || !actors ) res.json({data: null, success: false});
         else {
             actors = _.map(actors, function(num){
-ma
+
                 for (var i = 0; i < num.movies.length; i++) {
                     Movie.findById(num.movies[i], function(err, movie){
                          num.movies[i] =  movie;
