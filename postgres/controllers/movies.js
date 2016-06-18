@@ -76,35 +76,35 @@ exports.list = function(req, res) {
 // TODO: combine multiple genres, keywords, actors, to one result
 // TODO: series and actors acted in
 
-Array.prototype.uniqueObjects = function (props) {
-    function compare(a, b) {
-        var prop;
-        if (props) {
-            for (var j = 0; j < props.length; j++) {
-                prop = props[j];
-                if (a[prop] != b[prop]) {
-                    return false;
-                }
-            }
-        } else {
-            for (prop in a) {
-                if (a[prop] != b[prop]) {
-                    return false;
-                }
-            }
-
-        }
-        return true;
-    }
-    return this.filter(function (item, index, list) {
-        for (var i = 0; i < index; i++) {
-            if (compare(item, list[i])) {
-                return false;
-            }
-        }
-        return true;
-    });
-};
+//Array.prototype.uniqueObjects = function (props) {
+//    function compare(a, b) {
+//        var prop;
+//        if (props) {
+//            for (var j = 0; j < props.length; j++) {
+//                prop = props[j];
+//                if (a[prop] != b[prop]) {
+//                    return false;
+//                }
+//            }
+//        } else {
+//            for (prop in a) {
+//                if (a[prop] != b[prop]) {
+//                    return false;
+//                }
+//            }
+//
+//        }
+//        return true;
+//    }
+//    return this.filter(function (item, index, list) {
+//        for (var i = 0; i < index; i++) {
+//            if (compare(item, list[i])) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    });
+//};
 
 exports.read = function(req, res) {
     var keyword = req.params.movieId;
@@ -118,12 +118,12 @@ exports.read = function(req, res) {
         _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
         _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
 
-        var casts = [];
-
         _.map(movies, function(movie){
+            var casts = [];
+
             _.each(movie.castname, function(el, idx, ls) {
                 casts[idx] = {
-                    actor_id: movie.cast_actors[idx],
+                    idactors: movie.cast_actors[idx],
                     name: movie.castname[idx],
                     character: movie.cast_characters[idx],
                     billing_position: movie.cast_billing_positions[idx]
@@ -136,13 +136,13 @@ exports.read = function(req, res) {
                     return doc.character;
                 }
                 else{
-                    return doc.actor_id;
+                    return doc.idactors;
                 }
             }),function(grouped){
                 return grouped[0];
             });
 
-            var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
+            var uniqsort = _.sortBy(uniques, function(cast) { return cast.idactors; });
 
             movie.casts = uniqsort;
 
@@ -218,11 +218,11 @@ exports.search = function(req, res) {
     sequelize.query(query).spread(function(movies, metadata) {
 
         _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
-        _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
-
-        var casts = [];
+        _.map(movies, function(num){ num.genres = _.uniq(num.genres).sort()});
 
         _.map(movies, function(movie){
+            var casts = [];
+
             _.each(movie.castname, function(el, idx, ls) {
                 casts[idx] = {
                     actor_id: movie.cast_actors[idx],
