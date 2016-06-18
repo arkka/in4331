@@ -14,7 +14,7 @@ var Sequelize = require('sequelize');
 var sequelize = new Sequelize('wdm','','', {
     host: 'localhost',
     dialect: 'postgres',
-    logging: false
+    logging: true
 });
 
 /**
@@ -70,6 +70,12 @@ exports.mongodb = function(req,res) {
 
             });
 
+            casts = _.map(_.groupBy(casts,function(doc){
+                return doc.idactors;
+            }),function(grouped){
+                return grouped[0];
+            });
+
             movie.casts = casts;
 
             // delete processed cast
@@ -101,28 +107,40 @@ exports.mongodb = function(req,res) {
             movie.keywords = _.uniq(movie.keywords).sort();
             movie.genres = _.uniq(movie.genres).sort();
 
-            // Escape quotes
+            res.json(movie)
+
+
+
+
+            // Method 1: Export to JSON
             /*
             var jsonString = JSON.stringify(movie);
             jsonString = jsonString.replace('"', '\"');
             res.send(jsonString);
             */
 
+            // Method 2: Directly add to mongo
+            /*
             var options = {
                 uri: 'http://127.0.1:3100/movies',
                 method: 'PUT',
                 json: movie
             };
+            */
 
+            //request(options);
+            //console.log(id);
+            //res.send(id+"\n");
 
-
+            // Method 3 Spawn child process
             /*
             request(options, function (error, response, body) {
                 if (!error && response.statusCode == 200) {
-                    console.log(id) // Show the HTML for the Google homepage.
+                    //console.log(id)
 
 
                     id++;
+
 
                     if(id<=limit) {
                         // Spawn next process
@@ -134,11 +152,15 @@ exports.mongodb = function(req,res) {
                         request(options2);
                     }
 
+                    res.send(200);
+
 
                 }
-            })
+            });
             */
-            res.send(movie);
+
+
+            //res.send(movie);
 
             //res.send(jsonminify(movie).replace(/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g, "\\n")+"\n");
         });
