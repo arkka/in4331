@@ -11,17 +11,29 @@ var config = require('../config/config');
 var Sequelize = require('sequelize');
 var sequelize = new Sequelize(config.postgres);
 
-var queryString = "SELECT movies.*, aka_titles.title AS aka_title, aka_titles.location AS location, aka_titles.year AS year, aka_titles.idaka_titles AS idaka_title, " +
-"genres.genre AS genres, keywords.keyword AS keywords, " +
-"COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS casts " +
-"FROM movies " +
-"LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
-"LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
-"LEFT JOIN genres ON movies_genres.idgenres = genres.idgenres " +
-"LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
-"LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
-"LEFT JOIN acted_in ON movies.idmovies = acted_in.idmovies " +
-"LEFT JOIN actors ON acted_in.idactors = actors.idactors ";
+//var queryString = "SELECT movies.*, aka_titles.title AS aka_title, COALESCE(aka_titles.location,movies.location) AS location, COALESCE(aka_titles.year,movies.year) AS year, aka_titles.idaka_titles AS idaka_title, " +
+//"genres.genre AS genres, keywords.keyword AS keywords, " +
+//"COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS casts " +
+//"FROM movies " +
+//"LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
+//"LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
+//"LEFT JOIN genres ON movies_genres.idgenres = genres.idgenres " +
+//"LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
+//"LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
+//"LEFT JOIN acted_in ON movies.idmovies = acted_in.idmovies " +
+//"LEFT JOIN actors ON acted_in.idactors = actors.idactors ";
+
+var queryString = "SELECT movies.*, aka_titles.title AS aka_title, COALESCE(aka_titles.location,movies.location) AS location, COALESCE(aka_titles.year,movies.year) AS year, aka_titles.idaka_titles AS idaka_title, " +
+    "genres.genre AS genres, keywords.keyword AS keywords, " +
+    "COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS casts " +
+    "FROM movies " +
+    "LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
+    "LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
+    "LEFT JOIN genres ON movies_genres.idgenres = genres.idgenres " +
+    "LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
+    "LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
+    "LEFT JOIN acted_in ON movies.idmovies = acted_in.idmovies " +
+    "LEFT JOIN actors ON acted_in.idactors = actors.idactors ";
 
 /**
  * Index
@@ -169,10 +181,10 @@ exports.search = function(req, res) {
     else
     {
         // line below for partial matching
-        query = queryString + "WHERE movies.title LIKE '%" + keyword + "%' OR aka_titles.title LIKE '%" + keyword + "%'";
+        //query = queryString + "WHERE movies.title LIKE '%" + keyword + "%' OR aka_titles.title LIKE '%" + keyword + "%'";
 
         // line below for exact matching
-        //query = queryString + "WHERE movies.title LIKE '" + keyword + "' OR aka_titles.title LIKE '" + keyword + "'";
+        query = queryString + "WHERE movies.title LIKE '" + keyword + "' OR aka_titles.title LIKE '" + keyword + "'";
 
 
         // line below for ignore case (slow performance)

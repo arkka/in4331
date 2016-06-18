@@ -96,12 +96,15 @@ Array.prototype.uniqueObjects = function (props) {
 exports.read = function(req, res) {
     var keyword = req.params.actorId;
 
-    var queryString = "SELECT actors.*, acted_in.character, acted_in.idmovies, acted_in.billing_position, aka_names.name AS aka_name, movies.title, movies.year FROM actors " +
+    var queryString = "SELECT COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS full_name, " +
+        "array_agg(aka_names.name) AS aka_name, actors.gender, actors.number, acted_in.idmovies, movies.title AS movie_title, movies.year, acted_in.character " +
+        "FROM actors " +
         "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
         "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
         "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
         "WHERE (actors.idactors = " + keyword + ") " +
-        "ORDER BY acted_in.idmovies";
+        "GROUP BY full_name, actors.gender, actors.number, acted_in.idmovies, movie_title, year, character " +
+        "ORDER BY movies.title";
 
     sequelize.query(queryString).spread(function(actors, metadata) {
 
@@ -152,11 +155,15 @@ exports.search = function (req, res){
     var queryString;
 
     if (!isNaN(keyword)){
-        queryString = "SELECT actors.*, acted_in.character, acted_in.idmovies, acted_in.billing_position, aka_names.name AS aka_name, movies.title, movies.year FROM actors " +
+        queryString = "SELECT COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS full_name, " +
+            "array_agg(aka_names.name) AS aka_name, actors.gender, actors.number, acted_in.idmovies, movies.title AS movie_title, movies.year, acted_in.character " +
+            "FROM actors " +
             "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
             "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
             "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
-            "WHERE actors.idactors = '"+keyword+"' OR actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"'";
+            "WHERE actors.idactors = '"+keyword+"' OR actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
+            "GROUP BY full_name, actors.gender, actors.number, acted_in.idmovies, movie_title, year, character " +
+            "ORDER BY movies.title";
 
     } else if(keyword.indexOf(" ")>-1){
         // Could be firstname + lastname
@@ -171,21 +178,29 @@ exports.search = function (req, res){
 
         if ((arr[0].length >0)&&(arr[0].length >0)){
             // firstname and lastname
-            queryString = "SELECT actors.*, acted_in.character, acted_in.idmovies, acted_in.billing_position, aka_names.name AS aka_name, movies.title, movies.year FROM actors " +
+            queryString = "SELECT COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS full_name, " +
+                "array_agg(aka_names.name) AS aka_name, actors.gender, actors.number, acted_in.idmovies, movies.title AS movie_title, movies.year, acted_in.character " +
+                "FROM actors " +
                 "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
                 "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
                 "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
                 "WHERE (actors.fname LIKE '"+arr[0]+"' AND actors.lname LIKE '"+arr[1]+"') OR (actors.fname LIKE '"+arr[1]+"' AND actors.lname LIKE '"+arr[0]+"') " +
-                "OR (actors.fname LIKE '" +arr[0]+ " " + arr[1] + "') OR (actors.lname LIKE '" +arr[0]+ " " + arr[1] + "')";
+                "OR (actors.fname LIKE '" +arr[0]+ " " + arr[1] + "') OR (actors.lname LIKE '" +arr[0]+ " " + arr[1] + "') " +
+                "GROUP BY full_name, actors.gender, actors.number, acted_in.idmovies, movie_title, year, character " +
+                "ORDER BY movies.title";
         }
     }
     else
     {
-        queryString = "SELECT actors.*, acted_in.character, acted_in.idmovies, acted_in.billing_position, aka_names.name AS aka_name, movies.title, movies.year FROM actors " +
+        queryString = "SELECT COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS full_name, " +
+            "array_agg(aka_names.name) AS aka_name, actors.gender, actors.number, acted_in.idmovies, movies.title AS movie_title, movies.year, acted_in.character " +
+            "FROM actors " +
             "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
             "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
             "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
-            "WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"'";
+            "WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
+            "GROUP BY full_name, actors.gender, actors.number, acted_in.idmovies, movie_title, year, character " +
+            "ORDER BY movies.title";
     }
 
     sequelize.query(queryString).spread(function(actors, metadata) {
@@ -218,7 +233,8 @@ exports.stats = function (req, res){
             "FROM acted_in " +
             "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
             "WHERE actors.idactors = '"+keyword+"' OR actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
-            "GROUP BY actors.idactors";
+            "GROUP BY actors.idactors " +
+            "ORDER BY actors.fname";
 
     } else if(keyword.indexOf(" ")>-1){
         // Could be firstname + lastname
@@ -239,7 +255,8 @@ exports.stats = function (req, res){
                 "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
                 "WHERE (actors.fname LIKE '"+arr[0]+"' AND actors.lname LIKE '"+arr[1]+"') OR (actors.fname LIKE '"+arr[1]+"' AND actors.lname LIKE '"+arr[0]+"') " +
                 "OR (actors.fname LIKE '" +arr[0]+ " " + arr[1] + "') OR (actors.lname LIKE '" +arr[0]+ " " + arr[1] + "') " +
-                "GROUP BY actors.idactors";
+                "GROUP BY actors.idactors " +
+                "ORDER BY actors.fname";
         }
     }
     else
@@ -249,7 +266,8 @@ exports.stats = function (req, res){
             "FROM acted_in " +
             "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
             "WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
-            "Group by actors.idactors";
+            "Group by actors.idactors " +
+            "ORDER BY actors.fname";
     }
 
     sequelize.query(queryString).spread(function(actors, metadata) {
