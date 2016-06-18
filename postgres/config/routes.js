@@ -43,9 +43,9 @@ module.exports = function(app) {
         .get(actors.list);
         //.get(actors.read);
 
-    //app.route('/actors/:actorId')
-    //    .get(actors.read)
-    //    .post(actors.update);
+    app.route('/actors/:actorId')
+        .get(actors.read);
+        //.post(actors.update);
 
     app.route('/actors/search/:keyword')
         .get(actors.search);
