@@ -11,17 +11,29 @@ var config = require('../config/config');
 var Sequelize = require('sequelize');
 var sequelize = new Sequelize(config.postgres);
 
-var queryString = "SELECT movies.*, aka_titles.title AS aka_title, aka_titles.location AS location, aka_titles.year AS year, aka_titles.idaka_titles AS idaka_title, " +
-"genres.genre AS genres, keywords.keyword AS keywords, " +
-"COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS casts " +
-"FROM movies " +
-"LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
-"LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
-"LEFT JOIN genres ON movies_genres.idgenres = genres.idgenres " +
-"LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
-"LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
-"LEFT JOIN acted_in ON movies.idmovies = acted_in.idmovies " +
-"LEFT JOIN actors ON acted_in.idactors = actors.idactors ";
+//var queryString = "SELECT movies.*, aka_titles.title AS aka_title, COALESCE(aka_titles.location,movies.location) AS location, COALESCE(aka_titles.year,movies.year) AS year, aka_titles.idaka_titles AS idaka_title, " +
+//"genres.genre AS genres, keywords.keyword AS keywords, " +
+//"COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS casts " +
+//"FROM movies " +
+//"LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
+//"LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
+//"LEFT JOIN genres ON movies_genres.idgenres = genres.idgenres " +
+//"LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
+//"LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
+//"LEFT JOIN acted_in ON movies.idmovies = acted_in.idmovies " +
+//"LEFT JOIN actors ON acted_in.idactors = actors.idactors ";
+
+var queryString = "SELECT movies.idmovies, movies.title, movies.number, movies.type, movies.language, aka_titles.title AS aka_title, COALESCE(aka_titles.location,movies.location) AS movie_location, COALESCE(aka_titles.year,movies.year) AS movie_year, " +
+    "array_agg(genres.genre) AS genres, array_agg(keywords.keyword) AS keywords, " +
+    "array_agg(COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ')) AS casts " +
+    "FROM movies " +
+    "LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
+    "LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
+    "LEFT JOIN genres ON movies_genres.idgenres = genres.idgenres " +
+    "LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
+    "LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
+    "LEFT JOIN acted_in ON movies.idmovies = acted_in.idmovies " +
+    "LEFT JOIN actors ON acted_in.idactors = actors.idactors ";
 
 /**
  * Index
@@ -108,27 +120,32 @@ Array.prototype.uniqueObjects = function (props) {
 exports.read = function(req, res) {
     var keyword = req.params.movieId;
 
-    var query = queryString + "WHERE (movies.idmovies = '" + keyword + "')";
+    var query = queryString + "WHERE (movies.idmovies = '" + keyword + "') " +
+        "GROUP BY movies.idmovies, aka_title, movie_location, movie_year";
 
     sequelize.query(query).spread(function(movies, metadata) {
 
-        var keywords = _.uniq(_.map(movies, function(num){ return num.keywords}));
-        var genres = _.uniq(_.map(movies, function(num){ return num.genres}));
-        var casts = _.uniq(_.map(movies, function(num){ return num.casts}));
-
-        _.map(movies, function(num){ num.keywords = keywords.sort()});
-        _.map(movies, function(num){ num.genres = genres.sort()});
-        _.map(movies, function(num){ num.casts = casts.sort()});
+        //var keywords = _.uniq(_.map(movies, function(num){ return num.keywords}));
+        //var genres = _.uniq(_.map(movies, function(num){ return num.genres}));
+        //var casts = _.uniq(_.map(movies, function(num){ return num.casts}));
+        //
+        //_.map(movies, function(num){ num.keywords = keywords.sort()});
+        //_.map(movies, function(num){ num.genres = genres.sort()});
+        //_.map(movies, function(num){ num.casts = casts.sort()});
 
         // TODO: Separate null for idaka_title
-        var result = movies.uniqueObjects(["idaka_title"]);
+        //var result = movies.uniqueObjects(["idaka_title"]);
+
+        _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
+        _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
+        _.map(movies, function(num){ num.casts = _.uniq(num.casts).sort()});
 
         res.json({
             keyword: keyword,
-            count: result.length,
+            count: movies.length,
             data: {
-                movies: result,
-                movies_by_year: _.groupBy(result, function(num){ return num.year; })
+                movies: movies,
+                movies_by_year: _.groupBy(movies, function(num){ return num.movie_year; })
             },
             success: true
         });
@@ -164,41 +181,49 @@ exports.search = function(req, res) {
 
     if (!isNaN(keyword))
     {
-        query = queryString + "WHERE (movies.idmovies = '" + keyword + "')";
+        query = queryString + "WHERE (movies.idmovies = '" + keyword + "') " +
+            "GROUP BY movies.idmovies, aka_title, movie_location, movie_year";
     }
     else
     {
         // line below for partial matching
-        query = queryString + "WHERE movies.title LIKE '%" + keyword + "%' OR aka_titles.title LIKE '%" + keyword + "%'";
+        //query = queryString + "WHERE movies.title LIKE '%" + keyword + "%' OR aka_titles.title LIKE '%" + keyword + "%' " +
+        //    "GROUP BY movies.idmovies, aka_title, movie_location, movie_year";
 
         // line below for exact matching
-        //query = queryString + "WHERE movies.title LIKE '" + keyword + "' OR aka_titles.title LIKE '" + keyword + "'";
+        //query = queryString + "WHERE movies.title LIKE '" + keyword + "' OR aka_titles.title LIKE '" + keyword + "' " +
+        //    "GROUP BY movies.idmovies, aka_title, movie_location, movie_year";
 
 
         // line below for ignore case (slow performance)
-        //query = queryString + "WHERE lower(movies.title) LIKE lower('%" + keyword + "%') OR lower(aka_titles.title) LIKE lower('%" + keyword + "%')";
+        query = queryString + "WHERE lower(movies.title) LIKE lower('%" + keyword + "%') OR lower(aka_titles.title) LIKE lower('%" + keyword + "%') " +
+            "GROUP BY movies.idmovies, aka_title, movie_location, movie_year";
     }
 
     sequelize.query(query).spread(function(movies, metadata) {
 
-        var keywords = _.uniq(_.map(movies, function(num){ return num.keywords}));
-        var genres = _.uniq(_.map(movies, function(num){ return num.genres}));
-        var casts = _.uniq(_.map(movies, function(num){ return num.casts}));
+        //var keywords = _.uniq(_.map(movies, function(num){ return num.keywords}));
+        //var genres = _.uniq(_.map(movies, function(num){ return num.genres}));
+        //var casts = _.uniq(_.map(movies, function(num){ return num.casts}));
 
         // TODO: idmovie as keys and different value for partial match
-        _.map(movies, function(num){ num.keywords = keywords.sort()});
-        _.map(movies, function(num){ num.genres = genres.sort()});
-        _.map(movies, function(num){ num.casts = casts.sort()});
+        //_.map(movies, function(num){ num.keywords = keywords.sort()});
+        //_.map(movies, function(num){ num.genres = genres.sort()});
+        //_.map(movies, function(num){ num.casts = casts.sort()});
 
         // TODO: Separate null for idaka_title
-        var result = movies.uniqueObjects(["idaka_title"]);
+        //var result = movies.uniqueObjects(["idaka_title"]);
+
+        _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
+        _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
+        _.map(movies, function(num){ num.casts = _.uniq(num.casts).sort()});
 
         res.json({
             keyword: keyword,
-            count: result.length,
+            count: movies.length,
             data: {
-                movies: result,
-                movies_by_year: _.groupBy(result, function(num){ return num.year; })
+                movies: movies,
+                movies_by_year: _.groupBy(movies, function(num){ return num.movie_year; })
             },
             success: true
         });
