@@ -146,6 +146,11 @@ exports.read = function(req, res) {
 
             movie.casts = uniqsort;
 
+            movie.year = movie.movie_year;
+            movie.location = movie.movie_location;
+            delete movie.movie_year;
+            delete movie.movie_location;
+
             // delete processed cast
             delete movie.castname;
             delete movie.cast_characters;
@@ -225,7 +230,7 @@ exports.search = function(req, res) {
 
             _.each(movie.castname, function(el, idx, ls) {
                 casts[idx] = {
-                    actor_id: movie.cast_actors[idx],
+                    idactors: movie.cast_actors[idx],
                     name: movie.castname[idx],
                     character: movie.cast_characters[idx],
                     billing_position: movie.cast_billing_positions[idx]
@@ -238,15 +243,20 @@ exports.search = function(req, res) {
                     return doc.character;
                 }
                 else{
-                    return doc.actor_id;
+                    return doc.idactors;
                 }
             }),function(grouped){
                 return grouped[0];
             });
 
-            var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
+            var uniqsort = _.sortBy(uniques, function(cast) { return cast.idactors; });
 
             movie.casts = uniqsort;
+
+            movie.year = movie.movie_year;
+            movie.location = movie.movie_location;
+            delete movie.movie_year;
+            delete movie.movie_location;
 
             // delete processed cast
             delete movie.castname;
@@ -317,6 +327,11 @@ exports.genre = function(req, res) {
 
             movie.casts = uniqsort;
 
+            movie.year = movie.movie_year;
+            movie.location = movie.movie_location;
+            delete movie.movie_year;
+            delete movie.movie_location;
+
             // delete processed cast
             delete movie.castname;
             delete movie.cast_characters;
@@ -385,6 +400,12 @@ exports.genre_year = function(req, res) {
             var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
 
             movie.casts = uniqsort;
+
+            movie.year = movie.movie_year;
+            movie.location = movie.movie_location;
+            delete movie.movie_year;
+            delete movie.movie_location;
+
 
             // delete processed cast
             delete movie.castname;
@@ -467,6 +488,12 @@ exports.genre_year_range = function(req, res) {
             var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
 
             movie.casts = uniqsort;
+
+            movie.year = movie.movie_year;
+            movie.location = movie.movie_location;
+            delete movie.movie_year;
+            delete movie.movie_location;
+
 
             // delete processed cast
             delete movie.castname;

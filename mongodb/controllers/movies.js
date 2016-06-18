@@ -27,7 +27,7 @@ exports.create = function(req, res) {
         if(err) res.json({data: null, success: false});
         else res.json({
             data: {
-                movie: movie,
+                movie: movie
             },
             success: false
         });
@@ -116,6 +116,7 @@ exports.search = function(req, res) {
         else {
             res.json({
                 keyword: keyword,
+                count: movies.length,
                 data: {
                     movies: movies,
                     movies_by_year: _.groupBy(movies, function(num){ return num.year; })
