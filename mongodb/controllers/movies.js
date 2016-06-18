@@ -143,8 +143,8 @@ exports.genre = function(req, res) {
         if(err || !movies) res.json({data: null, success: false});
         else res.json({
             keyword: keyword,
+            count: movies.length,
             data: {
-                movie_total: movies.length,
                 movies: movies
             },
             success: true
@@ -175,8 +175,8 @@ exports.genre_year = function(req, res) {
                     genre: genreQ,
                     year: yearQ
                 },
+                count: movies.length,
                 data: {
-                    movie_total: movies.length,
                     movies: movies
                 },
                 success: true
@@ -227,9 +227,10 @@ exports.genre_year_range = function(req, res) {
                     year_start: yFrom,
                     year_end: yTo
                 },
+                count: movies.length,
                 data: {
-                    movie_total: movies.length,
-                    movies: movies
+                    movies: movies,
+                    movies_by_year: _.groupBy(movies, function(num){ return num.year; })
                 },
                 success: true
             });
@@ -271,10 +272,10 @@ exports.genre_stats = function(req, res) {
                 });
                 res.json({
                     keyword: keyword,
+                    total_genres: _.uniq(genres).length,
+                    movie_total: moviesTotal,
                     data: {
-                        movie_total: moviesTotal,
-                        genre: _.countBy(genres, function(num) { return num; }),
-                        total_genres: _.uniq(genres).length
+                        genre: _.countBy(genres, function(num) { return num; })
                     },
                     success: true
                 });
@@ -334,11 +335,10 @@ exports.genre_stats_range = function(req, res) {
                     year_start: yFrom,
                     year_end: yTo
                 },
+                total_genres: _.uniq(genres).length,
+                //movies_total: moviesTotal,
                 data: {
-                    movies_total: moviesTotal,
-                    genre: _.countBy(genres, function(num) { return num; }),
-                    genres_total: _.uniq(genres).length
-
+                    genre: _.countBy(genres, function(num) { return num; })
                 },
                 success: true
             });

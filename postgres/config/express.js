@@ -22,7 +22,8 @@ var fs = require('fs'),
     path = require('path'),
     moment = require('moment'),
     chalk = require('chalk'),
-    sync = require('sync');
+    sync = require('sync'),
+    pg = require('pg');
 
 module.exports = function(db) {
     // Initialize express app
