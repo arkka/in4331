@@ -21,7 +21,7 @@ var queryString = "SELECT movies.*, aka_titles.title AS aka_title, aka_titles.lo
 "LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
 "LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
 "LEFT JOIN acted_in ON movies.idmovies = acted_in.idmovies " +
-"LEFT JOIN actors ON  acted_in.idactors = actors.idactors ";
+"LEFT JOIN actors ON acted_in.idactors = actors.idactors ";
 
 /**
  * Index
@@ -184,7 +184,7 @@ exports.search = function(req, res) {
         var keywords = _.uniq(_.map(movies, function(num){ return num.keywords}));
         var genres = _.uniq(_.map(movies, function(num){ return num.genres}));
         var casts = _.uniq(_.map(movies, function(num){ return num.casts}));
-        
+
         // TODO: idmovie as keys and different value for partial match
         _.map(movies, function(num){ num.keywords = keywords.sort()});
         _.map(movies, function(num){ num.genres = genres.sort()});

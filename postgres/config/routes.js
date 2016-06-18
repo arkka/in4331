@@ -46,10 +46,10 @@ module.exports = function(app) {
     //app.route('/actors/:actorId')
     //    .get(actors.read)
     //    .post(actors.update);
-    //
-    //app.route('/actors/search/:keyword')
-    //    .get(actors.search);
-    //
+
+    app.route('/actors/search/:keyword')
+        .get(actors.search);
+
     //app.route('/actors/stats/:keyword')
     //    .get(actors.stats);
 
