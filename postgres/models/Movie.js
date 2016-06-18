@@ -12,13 +12,16 @@ module.exports = function(sequelize, DataTypes) {
 			autoIncrement: true
 		},
 		title: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING
 		},
 		year: {
-			type: DataTypes.INTEGER,
+			type: DataTypes.INTEGER
 		},
 		number: {
-			type: DataTypes.INTEGER,
+			type: DataTypes.INTEGER
+		},
+		type: {
+			type: DataTypes.INTEGER
 		},
 		location: {
 			type: DataTypes.STRING
