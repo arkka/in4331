@@ -324,4 +324,65 @@ exports.genre_year = function(req, res) {
     });
 };
 
+/**
+ * Genre
+ * SC4: Detailed movie information
+ */
+// TODO: Check check check with real data
+// TODO: Implement year range filter
+exports.genre_year_range = function(req, res) {
 
+    var genreQ = req.params.genre;
+
+    // Check order of year
+    var yFrom;
+    var yTo;
+
+    if (req.params.yfrom > req.params.yto) {
+        yFrom = req.params.yto;
+        yTo = req.params.yfrom;
+    }
+    else {
+        yFrom = req.params.yfrom;
+        yTo = req.params.yto;
+    }
+
+    var query = "SELECT movies.idmovies, movies.title, movies.number, movies.type, movies.language, aka_titles.title AS aka_title, COALESCE(aka_titles.location,movies.location) AS movie_location, COALESCE(aka_titles.year,movies.year) AS movie_year, " +
+        "array_agg(genres.genre) AS genres, array_agg(keywords.keyword) AS keywords, " +
+        "array_agg(COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ')) AS casts " +
+        "FROM movies " +
+        "LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
+        "LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
+        "LEFT JOIN genres ON movies_genres.idgenres = genres.idgenres " +
+        "LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
+        "LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
+        "LEFT JOIN acted_in ON movies.idmovies = acted_in.idmovies " +
+        "LEFT JOIN actors ON acted_in.idactors = actors.idactors " +
+        "WHERE lower(genres.genre) LIKE '%" + genreQ + "%' AND (aka_titles.year BETWEEN " + yFrom + " AND " + yTo +" OR movies.year BETWEEN " + yFrom + " AND " + yTo +" ) " +
+        "GROUP BY movies.idmovies, aka_title, movie_location, movie_year " +
+        "ORDER BY movies.title";
+
+    sequelize.query(query).spread(function(movies, metadata) {
+
+        _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
+        _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
+        _.map(movies, function(num){ num.casts = _.uniq(num.casts).sort()});
+
+        res.json({
+            keyword: {
+                genre: genreQ,
+                year_start: yFrom,
+                year_end: yTo
+            },
+            count: movies.length,
+            data: {
+                movies: movies,
+                movies_by_year: _.groupBy(movies, function(num){ return num.movie_year; })
+            },
+            success: true
+        });
+        // Results will be an empty array and metadata will contain the number of affected rows.
+    });
+
+
+};

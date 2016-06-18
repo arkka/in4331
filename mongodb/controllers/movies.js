@@ -227,9 +227,10 @@ exports.genre_year_range = function(req, res) {
                     year_start: yFrom,
                     year_end: yTo
                 },
+                count: movies.length,
                 data: {
-                    movie_total: movies.length,
-                    movies: movies
+                    movies: movies,
+                    movies_by_year: _.groupBy(movies, function(num){ return num.year; })
                 },
                 success: true
             });
