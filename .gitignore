@@ -1,2 +1,5 @@
 .idea/
 node_modules/
+postgres/config/env/development.js
+mongo/config/env/development.js
+neo4j/config/env/development.js

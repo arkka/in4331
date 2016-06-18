@@ -6,6 +6,7 @@
 module.exports = function(app) {
     var movies = require('../controllers/movies');
     var actors = require('../controllers/actors');
+    var dump = require('../controllers/dump');
 
     app.route('/')
         .get(movies.index);
@@ -53,4 +54,6 @@ module.exports = function(app) {
     //app.route('/actors/stats/:keyword')
     //    .get(actors.stats);
 
+    app.route('/dump/mongodb')
+        .get(dump.mongodb);
 };

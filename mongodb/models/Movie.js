@@ -27,9 +27,9 @@ var MovieSchema = new Schema({
 		location	: { type: String},
 	}],
 
-	location	: [{ type: String }],
+	location	: { type: String },
 
-	languages	: [{ type: String }],
+	languages	: { type: String },
 
 	genres		: [{ type: String }],
 
