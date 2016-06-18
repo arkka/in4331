@@ -143,8 +143,8 @@ exports.genre = function(req, res) {
         if(err || !movies) res.json({data: null, success: false});
         else res.json({
             keyword: keyword,
+            count: movies.length,
             data: {
-                movie_total: movies.length,
                 movies: movies
             },
             success: true
@@ -175,8 +175,8 @@ exports.genre_year = function(req, res) {
                     genre: genreQ,
                     year: yearQ
                 },
+                count: movies.length,
                 data: {
-                    movie_total: movies.length,
                     movies: movies
                 },
                 success: true

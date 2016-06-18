@@ -121,7 +121,8 @@ exports.read = function(req, res) {
     var keyword = req.params.movieId;
 
     var query = queryString + "WHERE (movies.idmovies = '" + keyword + "') " +
-        "GROUP BY movies.idmovies, aka_title, movie_location, movie_year";
+        "GROUP BY movies.idmovies, aka_title, movie_location, movie_year " +
+        "ORDER BY movies.title";
 
     sequelize.query(query).spread(function(movies, metadata) {
 
@@ -182,7 +183,8 @@ exports.search = function(req, res) {
     if (!isNaN(keyword))
     {
         query = queryString + "WHERE (movies.idmovies = '" + keyword + "') " +
-            "GROUP BY movies.idmovies, aka_title, movie_location, movie_year";
+            "GROUP BY movies.idmovies, aka_title, movie_location, movie_year " +
+            "ORDER BY movies.title";
     }
     else
     {
@@ -197,7 +199,8 @@ exports.search = function(req, res) {
 
         // line below for ignore case (slow performance)
         query = queryString + "WHERE lower(movies.title) LIKE lower('%" + keyword + "%') OR lower(aka_titles.title) LIKE lower('%" + keyword + "%') " +
-            "GROUP BY movies.idmovies, aka_title, movie_location, movie_year";
+            "GROUP BY movies.idmovies, aka_title, movie_location, movie_year " +
+            "ORDER BY movies.title";
     }
 
     sequelize.query(query).spread(function(movies, metadata) {
@@ -239,20 +242,40 @@ exports.search = function(req, res) {
 // TODO: Check check check with real data
 // TODO: Implement year range filter
 exports.genre = function(req, res) {
-    /*
-    Movie.find({ genres: req.params.genre })
-        .sort({year: -1, title: 1})
-        .populate('casts.actor')
-        .exec(function(err, movies){
-        if(err || !movies) res.json({data: null, success: false});
-        else res.json({
+    var keyword = req.params.genre;
+    var query = "SELECT movies.idmovies, movies.title, movies.number, movies.type, movies.language, aka_titles.title AS aka_title, COALESCE(aka_titles.location,movies.location) AS movie_location, COALESCE(aka_titles.year,movies.year) AS movie_year, " +
+        "array_agg(genres.genre) AS genres, array_agg(keywords.keyword) AS keywords, " +
+        "array_agg(COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ')) AS casts " +
+        "FROM movies " +
+        "LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
+        "LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
+        "LEFT JOIN genres ON movies_genres.idgenres = genres.idgenres " +
+        "LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
+        "LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
+        "LEFT JOIN acted_in ON movies.idmovies = acted_in.idmovies " +
+        "LEFT JOIN actors ON acted_in.idactors = actors.idactors " +
+        "WHERE lower(genres.genre) LIKE '%" + keyword + "%' " +
+        "GROUP BY movies.idmovies, aka_title, movie_location, movie_year " +
+        "ORDER BY movies.title";
+
+    sequelize.query(query).spread(function(movies, metadata) {
+
+        _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
+        _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
+        _.map(movies, function(num){ num.casts = _.uniq(num.casts).sort()});
+
+        res.json({
+            keyword: keyword,
+            count: movies.length,
             data: {
-                movies: movies
+                movies: movies,
+                movies_by_year: _.groupBy(movies, function(num){ return num.movie_year; })
             },
             success: true
         });
+        // Results will be an empty array and metadata will contain the number of affected rows.
     });
-    */
+
 };
 
 /**
@@ -262,20 +285,43 @@ exports.genre = function(req, res) {
 // TODO: Check check check with real data
 // TODO: Implement year range filter
 exports.genre_year = function(req, res) {
-    /*
-    Movie.find({ genres: req.params.genre })
-        .sort({year: -1, title: 1})
-        .populate('casts.actor')
-        .exec(function(err, movies){
-            if(err || !movies) res.json({data: null, success: false});
-            else res.json({
-                data: {
-                    movies: movies
-                },
-                success: true
-            });
+    var genreQ = req.params.genre;
+    var yearQ = req.params.year;
+
+    var query = "SELECT movies.idmovies, movies.title, movies.number, movies.type, movies.language, aka_titles.title AS aka_title, COALESCE(aka_titles.location,movies.location) AS movie_location, COALESCE(aka_titles.year,movies.year) AS movie_year, " +
+        "array_agg(genres.genre) AS genres, array_agg(keywords.keyword) AS keywords, " +
+        "array_agg(COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ')) AS casts " +
+        "FROM movies " +
+        "LEFT JOIN aka_titles ON movies.idmovies = aka_titles.idmovies " +
+        "LEFT JOIN movies_genres ON movies.idmovies = movies_genres.idmovies " +
+        "LEFT JOIN genres ON movies_genres.idgenres = genres.idgenres " +
+        "LEFT JOIN movies_keywords ON movies.idmovies = movies_keywords.idmovies " +
+        "LEFT JOIN keywords ON  movies_keywords.idkeywords = keywords.idkeywords " +
+        "LEFT JOIN acted_in ON movies.idmovies = acted_in.idmovies " +
+        "LEFT JOIN actors ON acted_in.idactors = actors.idactors " +
+        "WHERE lower(genres.genre) LIKE '%" + genreQ + "%' AND (aka_titles.year = " + yearQ + " OR movies.year = " + yearQ + ") " +
+        "GROUP BY movies.idmovies, aka_title, movie_location, movie_year " +
+        "ORDER BY movies.title";
+
+    sequelize.query(query).spread(function(movies, metadata) {
+
+        _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
+        _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
+        _.map(movies, function(num){ num.casts = _.uniq(num.casts).sort()});
+
+        res.json({
+            keyword: {
+                genre: genreQ,
+                year: yearQ
+            },
+            count: movies.length,
+            data: {
+                movies: movies
+            },
+            success: true
         });
-        */
+        // Results will be an empty array and metadata will contain the number of affected rows.
+    });
 };
 
 
