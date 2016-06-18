@@ -109,28 +109,26 @@ exports.search = function(req, res) {
     }
 
     // Sort movies result from the first
-    //query.populate({path: 'movies', options: { sort: { 'year': 1 } } });
+    query.populate({path: 'movies', options: { sort: { 'year': 1 } } });
     query.exec(function(err, actors){
         if(err || !actors ) res.json({data: null, success: false});
         else {
             actors = _.map(actors, function(num){
 
-                for (var i = 0; i < num.movies.length; i++) {
-                    Movie.findById(num.movies[i], function(err, movie){
-                         num.movies[i] =  movie;
-                        console.log(movie);
-                    });
-                }
+                //for (var i = 0; i < num.movies.length; i++) {
+                //    Movie.findById(num.movies[i], function(err, movie){
+                //         num.movies[i] =  movie;
+                //    });
+                //}
 
-                //num.movies = "aaa";
-
-                //num.movies_by_year = _.groupBy(num.movies, function(num2){ return num2.year; });
+                num.movies_by_year = _.groupBy(num.movies, function(num2){ return num2.year; });
                 return num;
 
             });
 
             res.json({
                 keyword: keyword,
+                count: actors.length,
                 data: {
                     actors: actors
                 },
