@@ -63,61 +63,65 @@ exports.list = function(req, res) {
 // TODO: combine multiple genres, keywords, actors, to one result
 // TODO: series and actors acted in
 
-Array.prototype.uniqueObjects = function (props) {
-    function compare(a, b) {
-        var prop;
-        if (props) {
-            for (var j = 0; j < props.length; j++) {
-                prop = props[j];
-                if (a[prop] != b[prop]) {
-                    return false;
-                }
-            }
-        } else {
-            for (prop in a) {
-                if (a[prop] != b[prop]) {
-                    return false;
-                }
-            }
-
-        }
-        return true;
-    }
-    return this.filter(function (item, index, list) {
-        for (var i = 0; i < index; i++) {
-            if (compare(item, list[i])) {
-                return false;
-            }
-        }
-        return true;
-    });
-};
-
 exports.read = function(req, res) {
     var keyword = req.params.actorId;
 
-    var queryString = "SELECT COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS full_name, " +
-        "array_agg(aka_names.name) AS aka_name, actors.gender, actors.number, acted_in.idmovies, movies.title AS movie_title, movies.year, acted_in.character " +
+    var queryString = "SELECT actors.idactors, COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS full_name, " +
+        "array_agg(aka_names.name) AS aka_names, actors.gender, actors.number, array_agg(acted_in.idmovies) as movie_id, array_agg(movies.title) AS movie_title, " +
+        "array_agg(movies.year) AS movie_year, array_agg(acted_in.character) AS movie_character " +
         "FROM actors " +
         "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
         "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
         "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
-        "WHERE (actors.idactors = " + keyword + ") " +
-        "GROUP BY full_name, actors.gender, actors.number, acted_in.idmovies, movie_title, year, character " +
-        "ORDER BY movies.title";
+        "WHERE actors.idactors = " + keyword + " " +
+        "GROUP BY actors.idactors, full_name, actors.gender, actors.number";
 
     sequelize.query(queryString).spread(function(actors, metadata) {
 
-        //var aka_name = _.uniq(_.map(actors, function(num){ return num.aka_name}));
-        //_.map(actors, function(num){ num.aka_name = aka_name.sort()});
-        //var result = actors.uniqueObjects(["character"]);
+        _.map(actors, function(num){ num.aka_names = _.uniq(num.aka_names.sort())});
+
+        _.map(actors, function(actor){
+            var movies = [];
+
+            _.each(actor.movie_id, function(el, idx, ls) {
+                movies[idx] = {
+                    idmovies: actor.movie_id[idx],
+                    title: actor.movie_title[idx],
+                    year: actor.movie_year[idx],
+                    character: actor.movie_character[idx]
+                }
+
+            });
+
+            var uniques = _.map(_.groupBy(movies,function(doc){
+                if (doc.character!= null) {
+                    return doc.character;
+                }
+                else{
+                    return doc.idmovies;
+                }
+            }),function(grouped){
+                return grouped[0];
+            });
+
+            var uniqsort = _.sortBy(uniques, function(movie) { return movie.idmovies; });
+
+            actor.movies = uniqsort;
+
+            // delete processed cast
+            delete actor.movie_id;
+            delete actor.movie_title;
+            delete actor.movie_year;
+            delete actor.movie_character;
+
+            actor.movies_by_year =  _.groupBy(actor.movies, function(num){ return num.year; });
+        });
 
         res.json({
             keyword: keyword,
             count: actors.length,
             data: {
-                actors: actors,
-                movies_by_year: _.groupBy(actors, function(num){ return num.year; })
+                actors: actors
             },
             success: true
         });
@@ -152,18 +156,21 @@ exports.update = function(req, res) {
 
 exports.search = function (req, res){
     var keyword = req.params.keyword;
-    var queryString;
+
+    var queryString = "SELECT actors.idactors, COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS full_name, " +
+        "array_agg(aka_names.name) AS aka_names, actors.gender, actors.number, array_agg(acted_in.idmovies) as movie_id, array_agg(movies.title) AS movie_title, " +
+        "array_agg(movies.year) AS movie_year, array_agg(acted_in.character) AS movie_character " +
+        "FROM actors " +
+        "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
+        "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
+        "LEFT JOIN movies on acted_in.idmovies = movies.idmovies ";
+
+    var query;
 
     if (!isNaN(keyword)){
-        queryString = "SELECT COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS full_name, " +
-            "array_agg(aka_names.name) AS aka_name, actors.gender, actors.number, acted_in.idmovies, movies.title AS movie_title, movies.year, acted_in.character " +
-            "FROM actors " +
-            "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
-            "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
-            "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
-            "WHERE actors.idactors = '"+keyword+"' OR actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
-            "GROUP BY full_name, actors.gender, actors.number, acted_in.idmovies, movie_title, year, character " +
-            "ORDER BY movies.title";
+        query = queryString +
+            "WHERE actors.idactors = '"+keyword+"' OR lower(actors.fname) LIKE lower('%"+keyword+"%') OR lower(actors.lname) LIKE lower('%"+keyword+"%' " +
+            "GROUP BY actors.idactors, full_name, actors.gender, actors.number ";
 
     } else if(keyword.indexOf(" ")>-1){
         // Could be firstname + lastname
@@ -178,38 +185,65 @@ exports.search = function (req, res){
 
         if ((arr[0].length >0)&&(arr[0].length >0)){
             // firstname and lastname
-            queryString = "SELECT COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS full_name, " +
-                "array_agg(aka_names.name) AS aka_name, actors.gender, actors.number, acted_in.idmovies, movies.title AS movie_title, movies.year, acted_in.character " +
-                "FROM actors " +
-                "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
-                "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
-                "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
-                "WHERE (actors.fname LIKE '"+arr[0]+"' AND actors.lname LIKE '"+arr[1]+"') OR (actors.fname LIKE '"+arr[1]+"' AND actors.lname LIKE '"+arr[0]+"') " +
-                "OR (actors.fname LIKE '" +arr[0]+ " " + arr[1] + "') OR (actors.lname LIKE '" +arr[0]+ " " + arr[1] + "') " +
-                "GROUP BY full_name, actors.gender, actors.number, acted_in.idmovies, movie_title, year, character " +
-                "ORDER BY movies.title";
+            query = queryString +
+                "WHERE (lower(actors.fname) LIKE lower('%"+arr[0]+"%') AND lower(actors.lname) LIKE lower('%"+arr[1]+"%')) OR (lower(actors.fname) LIKE lower('%"+arr[1]+"%') AND lower(actors.lname) LIKE lower('%"+arr[0]+"%')) " +
+                "OR (lower(actors.fname) LIKE lower('%" +arr[0]+ " " + arr[1] + "%')) OR (lower(actors.lname) LIKE lower('%" +arr[0]+ " " + arr[1] + "%')) " +
+                "GROUP BY actors.idactors, full_name, actors.gender, actors.number ";
         }
     }
     else
     {
-        queryString = "SELECT COALESCE(actors.fname, ' ') || COALESCE(actors.mname, ' ') || COALESCE(actors.lname, ' ') AS full_name, " +
-            "array_agg(aka_names.name) AS aka_name, actors.gender, actors.number, acted_in.idmovies, movies.title AS movie_title, movies.year, acted_in.character " +
-            "FROM actors " +
-            "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
-            "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
-            "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
-            "WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
-            "GROUP BY full_name, actors.gender, actors.number, acted_in.idmovies, movie_title, year, character " +
-            "ORDER BY movies.title";
+        query = queryString +
+            "WHERE lower(actors.fname) LIKE lower('%"+keyword+"%') OR lower(actors.lname) LIKE lower('%"+keyword+"%') " +
+            "GROUP BY actors.idactors, full_name, actors.gender, actors.number ";
     }
 
-    sequelize.query(queryString).spread(function(actors, metadata) {
+    sequelize.query(query).spread(function(actors, metadata) {
+
+        _.map(actors, function(num){ num.aka_names = _.uniq(num.aka_names.sort())});
+
+        _.map(actors, function(actor){
+            var movies = [];
+
+            _.each(actor.movie_id, function(el, idx, ls) {
+                movies[idx] = {
+                    idmovies: actor.movie_id[idx],
+                    title: actor.movie_title[idx],
+                    year: actor.movie_year[idx],
+                    character: actor.movie_character[idx]
+                }
+
+            });
+
+            var uniques = _.map(_.groupBy(movies,function(doc){
+                if (doc.character!= null) {
+                    return doc.character;
+                }
+                else{
+                    return doc.idmovies;
+                }
+            }),function(grouped){
+                return grouped[0];
+            });
+
+            var uniqsort = _.sortBy(uniques, function(movie) { return movie.idmovies; });
+
+            actor.movies = uniqsort;
+
+            // delete processed cast
+            delete actor.movie_id;
+            delete actor.movie_title;
+            delete actor.movie_year;
+            delete actor.movie_character;
+
+            actor.movies_by_year =  _.groupBy(actor.movies, function(num){ return num.year; });
+        });
+
         res.json({
             keyword: keyword,
             count: actors.length,
             data: {
-                actors: actors,
-                movies_by_year: _.groupBy(actors, function(num){ return num.year; })
+                actors: actors
             },
             success: true
         });
@@ -232,7 +266,7 @@ exports.stats = function (req, res){
             "COUNT(DISTINCT acted_in.idmovies) as num_movies " +
             "FROM acted_in " +
             "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
-            "WHERE actors.idactors = '"+keyword+"' OR actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
+            "WHERE actors.idactors = '"+keyword+"' OR lower(actors.fname) LIKE lower('"+keyword+"') OR lower(actors.lname) LIKE lower('"+keyword+"') " +
             "GROUP BY actors.idactors " +
             "ORDER BY actors.fname";
 
@@ -253,8 +287,8 @@ exports.stats = function (req, res){
                 "COUNT(DISTINCT acted_in.idmovies) as num_movies " +
                 "FROM acted_in " +
                 "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
-                "WHERE (actors.fname LIKE '"+arr[0]+"' AND actors.lname LIKE '"+arr[1]+"') OR (actors.fname LIKE '"+arr[1]+"' AND actors.lname LIKE '"+arr[0]+"') " +
-                "OR (actors.fname LIKE '" +arr[0]+ " " + arr[1] + "') OR (actors.lname LIKE '" +arr[0]+ " " + arr[1] + "') " +
+                "WHERE (lower(actors.fname) LIKE lower('"+arr[0]+"') AND lower(actors.lname) LIKE lower('"+arr[1]+"')) OR (lower(actors.fname) LIKE lower('"+arr[1]+"') AND lower(actors.lname) LIKE lower('"+arr[0]+"')) " +
+                "OR (lower(actors.fname) LIKE lower('" +arr[0]+ " " + arr[1] + "')) OR (lower(actors.lname) LIKE lower('" +arr[0]+ " " + arr[1] + "')) " +
                 "GROUP BY actors.idactors " +
                 "ORDER BY actors.fname";
         }
@@ -265,8 +299,8 @@ exports.stats = function (req, res){
             "COUNT(DISTINCT acted_in.idmovies) as num_movies " +
             "FROM acted_in " +
             "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
-            "WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
-            "Group by actors.idactors " +
+            "WHERE lower(actors.fname) LIKE lower('"+keyword+"') OR lower(actors.lname) LIKE lower('"+keyword+"') " +
+            "GROUP BY actors.idactors " +
             "ORDER BY actors.fname";
     }
 

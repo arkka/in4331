@@ -76,35 +76,35 @@ exports.list = function(req, res) {
 // TODO: combine multiple genres, keywords, actors, to one result
 // TODO: series and actors acted in
 
-Array.prototype.uniqueObjects = function (props) {
-    function compare(a, b) {
-        var prop;
-        if (props) {
-            for (var j = 0; j < props.length; j++) {
-                prop = props[j];
-                if (a[prop] != b[prop]) {
-                    return false;
-                }
-            }
-        } else {
-            for (prop in a) {
-                if (a[prop] != b[prop]) {
-                    return false;
-                }
-            }
-
-        }
-        return true;
-    }
-    return this.filter(function (item, index, list) {
-        for (var i = 0; i < index; i++) {
-            if (compare(item, list[i])) {
-                return false;
-            }
-        }
-        return true;
-    });
-};
+//Array.prototype.uniqueObjects = function (props) {
+//    function compare(a, b) {
+//        var prop;
+//        if (props) {
+//            for (var j = 0; j < props.length; j++) {
+//                prop = props[j];
+//                if (a[prop] != b[prop]) {
+//                    return false;
+//                }
+//            }
+//        } else {
+//            for (prop in a) {
+//                if (a[prop] != b[prop]) {
+//                    return false;
+//                }
+//            }
+//
+//        }
+//        return true;
+//    }
+//    return this.filter(function (item, index, list) {
+//        for (var i = 0; i < index; i++) {
+//            if (compare(item, list[i])) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    });
+//};
 
 exports.read = function(req, res) {
     var keyword = req.params.movieId;
@@ -118,12 +118,12 @@ exports.read = function(req, res) {
         _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
         _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
 
-        var casts = [];
-
         _.map(movies, function(movie){
+            var casts = [];
+
             _.each(movie.castname, function(el, idx, ls) {
                 casts[idx] = {
-                    actor_id: movie.cast_actors[idx],
+                    idactors: movie.cast_actors[idx],
                     name: movie.castname[idx],
                     character: movie.cast_characters[idx],
                     billing_position: movie.cast_billing_positions[idx]
@@ -136,15 +136,20 @@ exports.read = function(req, res) {
                     return doc.character;
                 }
                 else{
-                    return doc.actor_id;
+                    return doc.idactors;
                 }
             }),function(grouped){
                 return grouped[0];
             });
 
-            var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
+            var uniqsort = _.sortBy(uniques, function(cast) { return cast.idactors; });
 
             movie.casts = uniqsort;
+
+            movie.year = movie.movie_year;
+            movie.location = movie.movie_location;
+            delete movie.movie_year;
+            delete movie.movie_location;
 
             // delete processed cast
             delete movie.castname;
@@ -218,14 +223,14 @@ exports.search = function(req, res) {
     sequelize.query(query).spread(function(movies, metadata) {
 
         _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
-        _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
-
-        var casts = [];
+        _.map(movies, function(num){ num.genres = _.uniq(num.genres).sort()});
 
         _.map(movies, function(movie){
+            var casts = [];
+
             _.each(movie.castname, function(el, idx, ls) {
                 casts[idx] = {
-                    actor_id: movie.cast_actors[idx],
+                    idactors: movie.cast_actors[idx],
                     name: movie.castname[idx],
                     character: movie.cast_characters[idx],
                     billing_position: movie.cast_billing_positions[idx]
@@ -238,15 +243,20 @@ exports.search = function(req, res) {
                     return doc.character;
                 }
                 else{
-                    return doc.actor_id;
+                    return doc.idactors;
                 }
             }),function(grouped){
                 return grouped[0];
             });
 
-            var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
+            var uniqsort = _.sortBy(uniques, function(cast) { return cast.idactors; });
 
             movie.casts = uniqsort;
+
+            movie.year = movie.movie_year;
+            movie.location = movie.movie_location;
+            delete movie.movie_year;
+            delete movie.movie_location;
 
             // delete processed cast
             delete movie.castname;
@@ -317,6 +327,11 @@ exports.genre = function(req, res) {
 
             movie.casts = uniqsort;
 
+            movie.year = movie.movie_year;
+            movie.location = movie.movie_location;
+            delete movie.movie_year;
+            delete movie.movie_location;
+
             // delete processed cast
             delete movie.castname;
             delete movie.cast_characters;
@@ -349,7 +364,7 @@ exports.genre_year = function(req, res) {
     var yearQ = req.params.year;
 
     var query = queryString +
-        "WHERE lower(genres.genre) LIKE '%" + genreQ + "%' AND (aka_titles.year = " + yearQ + " OR movies.year = " + yearQ + ") " +
+        "WHERE lower(genres.genre) LIKE lower('%" + genreQ + "%') AND (aka_titles.year = " + yearQ + " OR movies.year = " + yearQ + ") " +
         "GROUP BY movies.idmovies, aka_title, movie_location, movie_year " +
         "ORDER BY movies.title";
 
@@ -385,6 +400,12 @@ exports.genre_year = function(req, res) {
             var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
 
             movie.casts = uniqsort;
+
+            movie.year = movie.movie_year;
+            movie.location = movie.movie_location;
+            delete movie.movie_year;
+            delete movie.movie_location;
+
 
             // delete processed cast
             delete movie.castname;
@@ -431,7 +452,7 @@ exports.genre_year_range = function(req, res) {
         yTo = req.params.yto;
     }
 
-    var query = queryString + "WHERE lower(genres.genre) LIKE '%" + genreQ + "%' AND (aka_titles.year BETWEEN " + yFrom + " AND " + yTo +" OR movies.year BETWEEN " + yFrom + " AND " + yTo +" ) " +
+    var query = queryString + "WHERE lower(genres.genre) LIKE lower('%" + genreQ + "%') AND (aka_titles.year BETWEEN " + yFrom + " AND " + yTo +" OR movies.year BETWEEN " + yFrom + " AND " + yTo +" ) " +
         "GROUP BY movies.idmovies, aka_title, movie_location, movie_year " +
         "ORDER BY movies.title";
 
@@ -467,6 +488,12 @@ exports.genre_year_range = function(req, res) {
             var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
 
             movie.casts = uniqsort;
+
+            movie.year = movie.movie_year;
+            movie.location = movie.movie_location;
+            delete movie.movie_year;
+            delete movie.movie_location;
+
 
             // delete processed cast
             delete movie.castname;
