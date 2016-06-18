@@ -349,7 +349,7 @@ exports.genre_year = function(req, res) {
     var yearQ = req.params.year;
 
     var query = queryString +
-        "WHERE lower(genres.genre) LIKE '%" + genreQ + "%' AND (aka_titles.year = " + yearQ + " OR movies.year = " + yearQ + ") " +
+        "WHERE lower(genres.genre) LIKE lower('%" + genreQ + "%') AND (aka_titles.year = " + yearQ + " OR movies.year = " + yearQ + ") " +
         "GROUP BY movies.idmovies, aka_title, movie_location, movie_year " +
         "ORDER BY movies.title";
 
@@ -431,7 +431,7 @@ exports.genre_year_range = function(req, res) {
         yTo = req.params.yto;
     }
 
-    var query = queryString + "WHERE lower(genres.genre) LIKE '%" + genreQ + "%' AND (aka_titles.year BETWEEN " + yFrom + " AND " + yTo +" OR movies.year BETWEEN " + yFrom + " AND " + yTo +" ) " +
+    var query = queryString + "WHERE lower(genres.genre) LIKE lower('%" + genreQ + "%') AND (aka_titles.year BETWEEN " + yFrom + " AND " + yTo +" OR movies.year BETWEEN " + yFrom + " AND " + yTo +" ) " +
         "GROUP BY movies.idmovies, aka_title, movie_location, movie_year " +
         "ORDER BY movies.title";
 

@@ -141,14 +141,17 @@ exports.genre = function(req, res) {
         .populate('casts.actor')
         .exec(function(err, movies){
         if(err || !movies) res.json({data: null, success: false});
-        else res.json({
-            keyword: keyword,
-            count: movies.length,
-            data: {
-                movies: movies
-            },
-            success: true
-        });
+        else {
+            res.json({
+                keyword: keyword,
+                count: movies.length,
+                data: {
+                    movies: movies,
+                    movies_by_year: _.groupBy(movies, function(num){ return num.year; })
+                },
+                success: true
+            });
+        }
     });
 };
 
@@ -237,13 +240,6 @@ exports.genre_year_range = function(req, res) {
         });
 };
 
-// Function for distinct array
-//function uniq(a) {
-//    return a.sort().filter(function(item, pos, ary) {
-//        return !pos || item != ary[pos - 1];
-//    })
-//}
-
 /**
  * Genre
  * SC5: Genre statistics
@@ -261,22 +257,45 @@ exports.genre_stats = function(req, res) {
     query.exec(function(err, movies){
             if(err || !movies) res.json({data: null, success: false});
             else {
+
                 var moviesTotal = movies.length;
+
+                // Create object per genre per movie
                 var genres = [];
                 _.map(movies, function(num){
                     var gen = num.genres;
+
                     _.map(gen, function(nim){
-                        genres.push(nim);
+                        //genres.push(nim);
+                        genres.push({
+                            genre: nim,
+                            movie_count: 1
+                        })
                     });
-                    genres = genres.sort();
                 });
+
+                // Sum movie per genre
+                var totalPerType = {};
+                for (var i = 0, len = genres.length; i < len; ++i) {
+                    totalPerType[genres[i].genre] = totalPerType[genres[i].genre] || 0;
+                    totalPerType[genres[i].genre] += genres[i].movie_count;
+                }
+                var out = _.map(totalPerType, function(sum, type) {
+                    return { genre: type, movie_count: sum };
+                });
+
+                // Sort the result based on genre
+                var outsort = _.sortBy(out, function(genre) { return genre.genre; });
+
                 res.json({
                     keyword: keyword,
-                    total_genres: _.uniq(genres).length,
-                    movie_total: moviesTotal,
-                    data: {
-                        genre: _.countBy(genres, function(num) { return num; })
-                    },
+                    total_movies: moviesTotal,
+                    //total_genres: _.uniq(genres).length,
+                    //data: {
+                    //    genre: _.countBy(genres, function(num) { return num; })
+                    //},
+                    total_genres: outsort.length,
+                    data: outsort,
                     success: true
                 });
             }
@@ -321,25 +340,46 @@ exports.genre_stats_range = function(req, res) {
         if(err || !movies) res.json({data: null, success: false});
         else {
             var moviesTotal = movies.length;
+
+            // Create object per genre per movie
             var genres = [];
             _.map(movies, function(num){
                 var gen = num.genres;
+
                 _.map(gen, function(nim){
-                    genres.push(nim);
+                    //genres.push(nim);
+                    genres.push({
+                        genre: nim,
+                        movie_count: 1
+                    })
                 });
-                genres = genres.sort();
             });
-            
+
+            // Sum movie per genre
+            var totalPerType = {};
+            for (var i = 0, len = genres.length; i < len; ++i) {
+                totalPerType[genres[i].genre] = totalPerType[genres[i].genre] || 0;
+                totalPerType[genres[i].genre] += genres[i].movie_count;
+            }
+            var out = _.map(totalPerType, function(sum, type) {
+                return { genre: type, movie_count: sum };
+            });
+
+            // Sort the result based on genre
+            var outsort = _.sortBy(out, function(genre) { return genre.genre; });
+
             res.json({
                 keyword: {
                     year_start: yFrom,
                     year_end: yTo
                 },
-                total_genres: _.uniq(genres).length,
-                //movies_total: moviesTotal,
-                data: {
-                    genre: _.countBy(genres, function(num) { return num; })
-                },
+                total_movies: moviesTotal,
+                //total_genres: _.uniq(genres).length,
+                //data: {
+                //    genre: _.countBy(genres, function(num) { return num; })
+                //},
+                total_genres: outsort.length,
+                data: outsort,
                 success: true
             });
         }

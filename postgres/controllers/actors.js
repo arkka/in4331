@@ -161,7 +161,7 @@ exports.search = function (req, res){
             "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
             "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
             "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
-            "WHERE actors.idactors = '"+keyword+"' OR actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
+            "WHERE actors.idactors = '"+keyword+"' OR lower(actors.fname) LIKE lower('%"+keyword+"%') OR lower(actors.lname) LIKE lower('%"+keyword+"%' " +
             "GROUP BY full_name, actors.gender, actors.number, acted_in.idmovies, movie_title, year, character " +
             "ORDER BY movies.title";
 
@@ -184,8 +184,8 @@ exports.search = function (req, res){
                 "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
                 "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
                 "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
-                "WHERE (actors.fname LIKE '"+arr[0]+"' AND actors.lname LIKE '"+arr[1]+"') OR (actors.fname LIKE '"+arr[1]+"' AND actors.lname LIKE '"+arr[0]+"') " +
-                "OR (actors.fname LIKE '" +arr[0]+ " " + arr[1] + "') OR (actors.lname LIKE '" +arr[0]+ " " + arr[1] + "') " +
+                "WHERE (lower(actors.fname) LIKE lower('%"+arr[0]+"%') AND lower(actors.lname) LIKE lower('%"+arr[1]+"%')) OR (lower(actors.fname) LIKE lower('%"+arr[1]+"%') AND lower(actors.lname) LIKE lower('%"+arr[0]+"%')) " +
+                "OR (lower(actors.fname) LIKE lower('%" +arr[0]+ " " + arr[1] + "%')) OR (lower(actors.lname) LIKE lower('%" +arr[0]+ " " + arr[1] + "%')) " +
                 "GROUP BY full_name, actors.gender, actors.number, acted_in.idmovies, movie_title, year, character " +
                 "ORDER BY movies.title";
         }
@@ -198,7 +198,7 @@ exports.search = function (req, res){
             "LEFT JOIN aka_names on actors.idactors = aka_names.idactors " +
             "LEFT JOIN acted_in on actors.idactors = acted_in.idactors " +
             "LEFT JOIN movies on acted_in.idmovies = movies.idmovies " +
-            "WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
+            "WHERE lower(actors.fname) LIKE lower('%"+keyword+"%') OR lower(actors.lname) LIKE lower('%"+keyword+"%') " +
             "GROUP BY full_name, actors.gender, actors.number, acted_in.idmovies, movie_title, year, character " +
             "ORDER BY movies.title";
     }
@@ -232,7 +232,7 @@ exports.stats = function (req, res){
             "COUNT(DISTINCT acted_in.idmovies) as num_movies " +
             "FROM acted_in " +
             "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
-            "WHERE actors.idactors = '"+keyword+"' OR actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
+            "WHERE actors.idactors = '"+keyword+"' OR lower(actors.fname) LIKE lower('"+keyword+"') OR lower(actors.lname) LIKE lower('"+keyword+"') " +
             "GROUP BY actors.idactors " +
             "ORDER BY actors.fname";
 
@@ -253,8 +253,8 @@ exports.stats = function (req, res){
                 "COUNT(DISTINCT acted_in.idmovies) as num_movies " +
                 "FROM acted_in " +
                 "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
-                "WHERE (actors.fname LIKE '"+arr[0]+"' AND actors.lname LIKE '"+arr[1]+"') OR (actors.fname LIKE '"+arr[1]+"' AND actors.lname LIKE '"+arr[0]+"') " +
-                "OR (actors.fname LIKE '" +arr[0]+ " " + arr[1] + "') OR (actors.lname LIKE '" +arr[0]+ " " + arr[1] + "') " +
+                "WHERE (lower(actors.fname) LIKE lower('"+arr[0]+"') AND lower(actors.lname) LIKE lower('"+arr[1]+"')) OR (lower(actors.fname) LIKE lower('"+arr[1]+"') AND lower(actors.lname) LIKE lower('"+arr[0]+"')) " +
+                "OR (lower(actors.fname) LIKE lower('" +arr[0]+ " " + arr[1] + "')) OR (lower(actors.lname) LIKE lower('" +arr[0]+ " " + arr[1] + "')) " +
                 "GROUP BY actors.idactors " +
                 "ORDER BY actors.fname";
         }
@@ -265,8 +265,8 @@ exports.stats = function (req, res){
             "COUNT(DISTINCT acted_in.idmovies) as num_movies " +
             "FROM acted_in " +
             "LEFT JOIN actors on actors.idactors = acted_in.idactors " +
-            "WHERE actors.fname LIKE '"+keyword+"' OR actors.lname LIKE '"+keyword+"' " +
-            "Group by actors.idactors " +
+            "WHERE lower(actors.fname) LIKE lower('"+keyword+"') OR lower(actors.lname) LIKE lower('"+keyword+"') " +
+            "GROUP BY actors.idactors " +
             "ORDER BY actors.fname";
     }
 

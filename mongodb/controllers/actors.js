@@ -178,6 +178,7 @@ exports.stats = function(req, res) {
 
             res.json({
                 keyword: keyword,
+                count: astats.length,
                 data: {
                     actors: astats
                 },
