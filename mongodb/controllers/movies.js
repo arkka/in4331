@@ -22,14 +22,15 @@ exports.index = function(req,res) {
  * Create
  */
 exports.create = function(req, res) {
-    var movie = new Movie(req.body.movie);
+    console.log(req.body);
+    var movie = new Movie(req.body);
     movie.save(function(err) {
         if(err) res.json({data: null, success: false});
         else res.json({
             data: {
                 movie: movie,
             },
-            success: false
+            success: true
         });
     });
 };

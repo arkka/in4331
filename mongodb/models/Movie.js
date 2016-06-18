@@ -29,7 +29,7 @@ var MovieSchema = new Schema({
 
 	location	: { type: String },
 
-	languages	: { type: String },
+	language	: { type: String },
 
 	genres		: [{ type: String }],
 
@@ -37,6 +37,8 @@ var MovieSchema = new Schema({
 
 	casts		: [{
 		actor			: { type: ObjectId, ref: 'Actor' },
+
+		idactors		: {type: Number }, //This is for legacy migration from postgress
 
 		character		: { type: String },
 

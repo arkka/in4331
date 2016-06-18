@@ -3,7 +3,7 @@ module.exports = {
         name: 'IN4331: Movie Database with MongoDB',
         description: '',
         keywords: '',
-        port: process.env.PORT || 3000,
+        port: process.env.PORT || 3100,
     },
 
     security: {
