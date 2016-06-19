@@ -47,7 +47,7 @@ exports.read = function(req, res) {
         "m-[:HAS_GENRE]->(genre:Genre), " +
         "m-[:IN_SERIES]->(series:Series), " +
         "m<-[:ACTED_IN]-(actors:Actors), "+
-        "return a,aka_title,series,actors")
+        "return a,aka_title,series,actors");
 
     query.exec().then(function (result) {
         res.json({
@@ -85,7 +85,22 @@ exports.update = function(req, res) {
  * List
  */
 exports.list = function(req, res) {
+    var query = apoc.query( "Match (m:Movies) " +
+        "return m limit 10");
 
+    query.exec().then(function (result) {
+        res.json({
+            success: true,
+            data: {
+                movie: result
+            }
+        });
+    }, function (err) {
+        res.json({
+            error: err,
+            success: false
+        });
+    });
 };
 
 /**
@@ -105,7 +120,7 @@ exports.search = function(req, res) {
         "m-[:HAS_GENRE]->(genre:Genre), " +
         "m-[:IN_SERIES]->(series:Series), " +
         "m<-[:ACTED_IN]-(actors:Actors), "+
-        "return m,aka_title,series,actors group by m")
+        "return m,aka_title,series,actors group by m");
 
     query.exec().then(function (result) {
         res.json({

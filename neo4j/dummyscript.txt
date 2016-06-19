@@ -1,20 +1,20 @@
-CREATE (TheMatrix:Movies {title:'The Matrix', year:1999, number:null, type:3,location:'Matrix World', language:'English'})
-CREATE (AmericanPie:Movies {title:'The American Pie: Highschool', year:2000, number:null, type:3,location:'University World', language:'English'})
-CREATE (TheMatrix2:Movies {title:'The Matrix Second Edition', year:2006, number:null, type:3,location:'New World', language:'Deutsch'})
-CREATE (Avengers:Movies {title:'The Avengers', year:2002, number:null, type:3,location:'USA', language:'English'})
-CREATE (BatmanMovie:Movies {title:'The Dark Knight', year:2005, number:null, type:3,location:'Gotham', language:'Body Language'})
-CREATE (OnePiece:Movies {title:'One Piece', year:2006, number:null, type:3,location:'East Blue', language:'Japanese'})
+CREATE (TheMatrix:Movies {idmovies:1, title:'The Matrix', year:1999, number:null, type:3,location:'Matrix World', language:'English'})
+CREATE (AmericanPie:Movies {idmovies:2, title:'The American Pie: Highschool', year:2000, number:null, type:3,location:'University World', language:'English'})
+CREATE (TheMatrix2:Movies {idmovies:3, title:'The Matrix Second Edition', year:2006, number:null, type:3,location:'New World', language:'Deutsch'})
+CREATE (Avengers:Movies {idmovies:4, title:'The Avengers', year:2002, number:null, type:3,location:'USA', language:'English'})
+CREATE (BatmanMovie:Movies {idmovies:5, title:'The Dark Knight', year:2005, number:null, type:3,location:'Gotham', language:'Body Language'})
+CREATE (OnePiece:Movies {idmovies:6, title:'One Piece', year:2006, number:null, type:3,location:'East Blue', language:'Japanese'})
 
 
-CREATE (Keanu:Actors {fname:'Keanu', mname:'NEO', lname: "Reeves", gender:2, number:0})
-CREATE (Sukma:Actors {fname:'A', mname:'Sukma', lname: "W", gender:1, number:1})
-CREATE (Arkka:Actors {fname:'Arkka', mname:'YOYO', lname: "Dhiratara", gender:1, number:0})
-CREATE (Viet:Actors {fname:'Viet', mname:'V', lname: "Do", gender:1, number:0})
-CREATE (Thor:Actors {fname:'Thor', mname:'Avengers', lname: "Thory", gender:1, number:1})
-CREATE (Dora:Actors {fname:'Dora', mname:'The', lname: "Explorer", gender:2, number:0})
-CREATE (Luffy:Actors {fname:'Monkey', mname:'D', lname: "Luffy", gender:2, number:5})
-CREATE (CaptainAmerica:Actors {fname:'Captain', mname:'', lname: "America", gender:1, number:0})
-CREATE (Batman:Actors {fname:'Bruce', mname:'', lname: "Wayne", gender:2, number:2})
+CREATE (Keanu:Actors {idactors:1, fname:'Keanu', mname:'NEO', lname: "Reeves", gender:2, number:0})
+CREATE (Sukma:Actors {idactors:2, fname:'A', mname:'Sukma', lname: "W", gender:1, number:1})
+CREATE (Arkka:Actors {idactors:3, fname:'Arkka', mname:'YOYO', lname: "Dhiratara", gender:1, number:0})
+CREATE (Viet:Actors {idactors:4, fname:'Viet', mname:'V', lname: "Do", gender:1, number:0})
+CREATE (Thor:Actors {idactors:5, fname:'Thor', mname:'Avengers', lname: "Thory", gender:1, number:1})
+CREATE (Dora:Actors {idactors:6, fname:'Dora', mname:'The', lname: "Explorer", gender:2, number:0})
+CREATE (Luffy:Actors {idactors:7, fname:'Monkey', mname:'D', lname: "Luffy", gender:2, number:5})
+CREATE (CaptainAmerica:Actors {idactors:8, fname:'Captain', mname:'', lname: "America", gender:1, number:0})
+CREATE (Batman:Actors {idactors:9, fname:'Bruce', mname:'', lname: "Wayne", gender:2, number:2})
 
 
 CREATE
@@ -45,12 +45,12 @@ CREATE
   (Luffy)-[:ACTED_IN {character:['Pirate King'], billing_position:1}]->(OnePiece)
   
 
-CREATE (Documentary:Genres {genre:'Documentary'})
-CREATE (Reality:Genres {genre:'Reality'})
-CREATE (Horror:Genres {genre:'Horror'})
-CREATE (Short:Genres {genre:'Short'})
-CREATE (Thriller:Genres {genre:'Thriller'})
-CREATE (Drama:Genres {genre:'Drama'})
+CREATE (Documentary:Genres {idgenres:1, genre:'Documentary'})
+CREATE (Reality:Genres {idgenres:2, genre:'Reality'})
+CREATE (Horror:Genres {idgenres:3, genre:'Horror'})
+CREATE (Short:Genres {idgenres:4, genre:'Short'})
+CREATE (Thriller:Genres {idgenres:5, genre:'Thriller'})
+CREATE (Drama:Genres {idgenres:6, genre:'Drama'})
 
 CREATE
   (TheMatrix)-[:HAS_GENRE]->(Documentary),
@@ -70,13 +70,13 @@ CREATE
 
 
 
-CREATE (number:Keywords {keyword:'number'})
-CREATE (web:Keywords {keyword:'web'})
-CREATE (friend:Keywords {keyword:'friend'})
-CREATE (heroin:Keywords {keyword:'heroin'})
-CREATE (vlog:Keywords {keyword:'vlog'})
-CREATE (austin:Keywords {keyword:'austin'})
-CREATE (beer:Keywords {keyword:'beer'})
+CREATE (number:Keywords {idekeywords:1, keyword:'number'})
+CREATE (web:Keywords {idekeywords:2, keyword:'web'})
+CREATE (friend:Keywords {idekeywords:3, keyword:'friend'})
+CREATE (heroin:Keywords {idekeywords:4, keyword:'heroin'})
+CREATE (vlog:Keywords {idekeywords:5, keyword:'vlog'})
+CREATE (austin:Keywords {idekeywords:6, keyword:'austin'})
+CREATE (beer:Keywords {idekeywords:7, keyword:'beer'})
 
 CREATE
   (TheMatrix)-[:HAS_KEYWORD]->(number),
@@ -92,14 +92,14 @@ CREATE
   (OnePiece)-[:HAS_KEYWORD]->(beer)
 
 
-CREATE (AliasTitle1:AKA_TITLES {title:'The Matrix USA', year:2000, location:'Netherland'})
-CREATE (AliasTitle2:AKA_TITLES {title:'The Matrix Reload', year:2000, location:'Germany'})
-CREATE (AliasTitle3:AKA_TITLES {title:'American Pie Strawberry', year:2001, location:'Matrix World'})
-CREATE (AliasTitle4:AKA_TITLES {title:'American Pienapel', year:2000, location:'Matrix World'})
-CREATE (AliasTitle5:AKA_TITLES {title:'The Matrix 2 Go', year:2006, location:'NYC'})
-CREATE (AliasTitle6:AKA_TITLES {title:'The Avengers Return', year:2003, location:'Manhattan'})
-CREATE (AliasTitle7:AKA_TITLES {title:'The White Knight', year:2005, location:'Gotham'})
-CREATE (AliasTitle8:AKA_TITLES {title:'One Piece and Two Piece', year:2007, location:'All Blue'})
+CREATE (AliasTitle1:AKA_TITLES {idaka_titles:1, title:'The Matrix USA', year:2000, location:'Netherland'})
+CREATE (AliasTitle2:AKA_TITLES {idaka_titles:2, title:'The Matrix Reload', year:2000, location:'Germany'})
+CREATE (AliasTitle3:AKA_TITLES {idaka_titles:3, title:'American Pie Strawberry', year:2001, location:'Matrix World'})
+CREATE (AliasTitle4:AKA_TITLES {idaka_titles:4, title:'American Pienapel', year:2000, location:'Matrix World'})
+CREATE (AliasTitle5:AKA_TITLES {idaka_titles:5, title:'The Matrix 2 Go', year:2006, location:'NYC'})
+CREATE (AliasTitle6:AKA_TITLES {idaka_titles:6, title:'The Avengers Return', year:2003, location:'Manhattan'})
+CREATE (AliasTitle7:AKA_TITLES {idaka_titles:7, title:'The White Knight', year:2005, location:'Gotham'})
+CREATE (AliasTitle8:AKA_TITLES {idaka_titles:8, title:'One Piece and Two Piece', year:2007, location:'All Blue'})
 
 CREATE
   (TheMatrix)-[:HAS_ALIAS]->(AliasTitle1),
@@ -113,17 +113,17 @@ CREATE
 
 
 
-CREATE (AliasName1:AKA_NAMES {name:'Keanu Tampan'})
-CREATE (AliasName2:AKA_NAMES {name:'Si Tampan'})
-CREATE (AliasName3:AKA_NAMES {name:'Macho Man'})
-CREATE (AliasName4:AKA_NAMES {name:'Hard Carry'})
-CREATE (AliasName5:AKA_NAMES {name:'Jungler'})
-CREATE (AliasName6:AKA_NAMES {name:'Thunderman'})
-CREATE (AliasName7:AKA_NAMES {name:'The Explorer'})
-CREATE (AliasName8:AKA_NAMES {name:'Pirate King'})
-CREATE (AliasName9:AKA_NAMES {name:'Captain Puerto Rico'})
-CREATE (AliasName10:AKA_NAMES {name:'Wayne'})
-CREATE (AliasName11:AKA_NAMES {name:'Robin Bestman'})
+CREATE (AliasName1:AKA_NAMES {idaka_names:1, name:'Keanu Tampan'})
+CREATE (AliasName2:AKA_NAMES {idaka_names:2, name:'Si Tampan'})
+CREATE (AliasName3:AKA_NAMES {idaka_names:3, name:'Macho Man'})
+CREATE (AliasName4:AKA_NAMES {idaka_names:4, name:'Hard Carry'})
+CREATE (AliasName5:AKA_NAMES {idaka_names:5, name:'Jungler'})
+CREATE (AliasName6:AKA_NAMES {idaka_names:6, name:'Thunderman'})
+CREATE (AliasName7:AKA_NAMES {idaka_names:7, name:'The Explorer'})
+CREATE (AliasName8:AKA_NAMES {idaka_names:8, name:'Pirate King'})
+CREATE (AliasName9:AKA_NAMES {idaka_names:9, name:'Captain Puerto Rico'})
+CREATE (AliasName10:AKA_NAMES {idaka_names:10, name:'Wayne'})
+CREATE (AliasName11:AKA_NAMES {idaka_names:11, name:'Robin Bestman'})
 
 
 CREATE
