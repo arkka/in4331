@@ -42,27 +42,17 @@ exports.create = function(req, res) {
  * Read
  */
 exports.read = function(req, res) {
-    var query = apoc.query( "Match (m:Movie)-[:HAS_AKATITLES]->(aka_title:Aka_titles), " +
-                            "m-[:HAS_KEYWORD]->(keyword:Keyword), " +
-                            "m-[:HAS_GENRE]->(genre:Genre), " +
-                            "m-[:IN_SERIES]->(series:Series), " +
-                            "m<-[:ACTED_IN]-(actors:Actors), "+
-                            "return a,aka_title,series,actors")
-
-    query.exec().then(function (result) {
-        res.json({
-            success: true,
+    /*
+    Movie.findById(req.params.movieId, function(err, movie){
+        if(err || !movie) res.json({data: null, success: false});
+        else res.json({
             data: {
-                movie: result
-            }
-        });
-    }, function (err) {
-        res.json({
-            error: err,
-            success: false
+                movie: movie,
+            },
+            success: true
         });
     });
-
+    */
 };
 
 /**
@@ -85,7 +75,18 @@ exports.update = function(req, res) {
  * List
  */
 exports.list = function(req, res) {
-
+    /*
+    Movie.find({}, function(err, movies){
+        if(err || !movies) res.json({data: null, success: false});
+        else res.json({
+            data: {
+                movies: movies,
+                movies_by_year: _.groupBy(movies, function(num){ return num.year; })
+            },
+            success: true
+        });
+    });
+    */
 };
 
 /**
@@ -93,33 +94,40 @@ exports.list = function(req, res) {
  * SC1: Detailed movie information
  */
 exports.search = function(req, res) {
+    /*
+    // Get variable for url parameter: keyword
     var keyword = req.params.keyword;
-    var parameter;
 
-    if (!isNaN(keyword)){
-    parameter = "m.title =~ '.*"+keyword+".*'"+" OR m.idmovies ="+keyword;
+    var query;
+
+    // To differentiate whether the keyword is ObjectId or word
+    if( keyword.length >= 12) {
+        query = Movie.find({ $or: [
+            { _id  : new ObjectId(keyword) },
+            { title : new RegExp(keyword, 'i')},
+            { aka_titles: { "$elemMatch" : { title: new RegExp(keyword, 'i') }}}
+        ]});
+    } else {
+        query = Movie.find({ $or: [
+            { title : new RegExp(keyword, 'i')},
+            { aka_titles: { "$elemMatch" : { title: new RegExp(keyword, 'i') }}}
+        ]});
     }
-        else parameter = "m.title =~ '.*"+keyword+".*'";
-    var query = apoc.query( "Match (m:Movie {"+parameter+"})-[:HAS_AKATITLES]->(aka_title:Aka_titles), " +
-        "m-[:HAS_KEYWORD]->(keyword:Keyword), " +
-        "m-[:HAS_GENRE]->(genre:Genre), " +
-        "m-[:IN_SERIES]->(series:Series), " +
-        "m<-[:ACTED_IN]-(actors:Actors), "+
-        "return m,aka_title,series,actors group by m")
 
-    query.exec().then(function (result) {
-        res.json({
-            success: true,
-            data: {
-                movie: result
-            }
-        });
-    }, function (err) {
-        res.json({
-            error: err,
-            success: false
-        });
+    query.exec(function(err, movies){
+        if(err || !movies ) res.json({data: null, success: false});
+        else {
+            res.json({
+                keyword: keyword,
+                data: {
+                    movies: movies,
+                    movies_by_year: _.groupBy(movies, function(num){ return num.year; })
+                },
+                success: true
+            });
+        }
     });
+    */
 };
 
 
