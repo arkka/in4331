@@ -12,7 +12,7 @@ var apoc = require('apoc'),
  */
 exports.index = function(req,res) {
     res.jsonp({
-        message: "Movie API - MongoDB"
+        message: "Movie API - Neo4j"
     });
 }
 
@@ -89,40 +89,31 @@ exports.list = function(req, res) {
  * SC2: Detailed actor information
  */
 exports.search = function(req, res) {
-    /*
     var keyword = req.params.keyword;
+    var parameter;
 
-    var query;
-
-    if( keyword.length >= 12) {
-        query = Actor.find({ $or: [
-            { _id  : new ObjectId(keyword) },
-            { "name.first" : new RegExp(keyword, 'i')},
-            { "name.last" : new RegExp(keyword, 'i')},
-            { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
-        ]});
-
-    } else {
-        query = Actor.find({ $or: [
-            { "name.first" : new RegExp(keyword, 'i')},
-            { "name.last" : new RegExp(keyword, 'i')},
-            { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
-        ]});
+    if (!isNaN(keyword)){
+        parameter = "m.lname =~ '.*"+keyword+".*'" +" OR "+ "m.fname =~ '.*"+keyword+".*'" + " OR m.idactors ="+keyword;
     }
-    query.populate({path: 'movies', options: { sort: { 'year': -1 } } })
-    query.exec(function(err, actors){
-        if(err || !actors ) res.json({data: null, success: false});
-        else {
-            res.json({
-                keyword: keyword,
-                data: {
-                    actors: actors
-                },
-                success: true
-            });
-        }
+    else parameter = "m.lname =~ '.*"+keyword+".*'" +" OR "+ "m.fname =~ '.*"+keyword+".*'";
+    var query = apoc.query( "Match (a:Actor)-[:HAS_NAME]->(aka_name:Aka_names), " +
+        "a-[:ACTED_IN]->(movies:Movies) " +
+        "WHERE "+ parameter +
+        "return a,aka_names,movies group by a")
+
+    query.exec().then(function (result) {
+        res.json({
+            success: true,
+            data: {
+                movie: result
+            }
+        });
+    }, function (err) {
+        res.json({
+            error: err,
+            success: false
+        });
     });
-    */
 };
 
 /**
