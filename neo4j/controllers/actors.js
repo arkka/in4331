@@ -93,19 +93,19 @@ exports.search = function(req, res) {
     var parameter;
 
     if (!isNaN(keyword)){
-        parameter = "m.lname =~ '.*"+keyword+".*'" +" OR "+ "m.fname =~ '.*"+keyword+".*'" + " OR m.idactors ="+keyword;
+        parameter = "a.lname =~ '.*"+keyword+".*'" +" OR "+ "a.fname =~ '.*"+keyword+".*'" + " OR a.idactors ="+keyword;
     }
-    else parameter = "m.lname =~ '.*"+keyword+".*'" +" OR "+ "m.fname =~ '.*"+keyword+".*'";
+    else parameter = "a.lname =~ '.*"+keyword+".*'" +" OR "+ "a.fname =~ '.*"+keyword+".*'";
     var query = apoc.query( "Match (a:Actor)-[:HAS_NAME]->(aka_name:Aka_names), " +
         "a-[:ACTED_IN]->(movies:Movies) " +
         "WHERE "+ parameter +
-        "return a,aka_names,movies group by a")
+        "return a,aka_names,movies group by a");
 
     query.exec().then(function (result) {
         res.json({
             success: true,
             data: {
-                movie: result
+                actors: result
             }
         });
     }, function (err) {
@@ -122,47 +122,32 @@ exports.search = function(req, res) {
  */
 exports.stats = function(req, res) {
     /*
-     var keyword = req.params.keyword;
+     *   match (actors:Person)-[:ACTED_IN]->(movies) where actors.name =~ '.*Tom.*' return distinct actors, count (movies) AS Movies_Played
+     * */
+    var keyword = req.params.keyword;
+    var parameter;
 
-     var query;
+    if (!isNaN(keyword)){
+        parameter = "a.lname =~ '.*"+keyword+".*'" +" OR "+ "a.fname =~ '.*"+keyword+".*'" + " OR a.idactors ="+keyword;
+    }
+    else parameter = "a.lname =~ '.*"+keyword+".*'" +" OR "+ "a.fname =~ '.*"+keyword+".*'";
+    var query = apoc.query( "Match (a:Actors)-[:ACTED_IN]->(movies:Movies)" +
+        "WHERE "+ parameter +
+        "return a, count(movies) as Movie_Played group by a")
 
-     if( keyword.length >= 12) {
-     query = Actor.find({ $or: [
-     { _id  : new ObjectId(keyword) },
-     { "name.first" : new RegExp(keyword, 'i')},
-     { "name.last" : new RegExp(keyword, 'i')},
-     { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
-     ]});
-
-     } else {
-     query = Actor.find({ $or: [
-     { "name.first" : new RegExp(keyword, 'i')},
-     { "name.last" : new RegExp(keyword, 'i')},
-     { aka_names: { "$in" : [new RegExp(keyword, 'i')] }}
-     ]});
-     }
-     query.populate({path: 'movies', options: { sort: { 'year': -1 } } })
-     query.exec(function(err, actors){
-     if(err || !actors ) res.json({data: null, success: false});
-     else {
-     var astats = _.map(actors, function(num){
-
-     return {
-     name: num.name.full,
-     num_movies: num.movies.length
-     };
-     });
-
-     res.json({
-     keyword: keyword,
-     data: {
-     actors: astats
-     },
-     success: true
-     });
-     }
-     });
-     */
+    query.exec().then(function (result) {
+        res.json({
+            success: true,
+            data: {
+                actors: result
+            }
+        });
+    }, function (err) {
+        res.json({
+            error: err,
+            success: false
+        });
+    });
 };
 
 
