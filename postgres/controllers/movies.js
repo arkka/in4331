@@ -304,7 +304,7 @@ exports.genre = function(req, res) {
         _.map(movies, function(movie){
             _.each(movie.castname, function(el, idx, ls) {
                 casts[idx] = {
-                    actor_id: movie.cast_actors[idx],
+                    idactors: movie.cast_actors[idx],
                     name: movie.castname[idx],
                     character: movie.cast_characters[idx],
                     billing_position: movie.cast_billing_positions[idx]
@@ -317,13 +317,13 @@ exports.genre = function(req, res) {
                     return doc.character;
                 }
                 else{
-                    return doc.actor_id;
+                    return doc.idactors;
                 }
             }),function(grouped){
                 return grouped[0];
             });
 
-            var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
+            var uniqsort = _.sortBy(uniques, function(cast) { return cast.idactors; });
 
             movie.casts = uniqsort;
 
@@ -344,7 +344,7 @@ exports.genre = function(req, res) {
             count: movies.length,
             data: {
                 movies: movies,
-                movies_by_year: _.groupBy(movies, function(num){ return num.movie_year; })
+                movies_by_year: _.groupBy(movies, function(num){ return num.year; })
             },
             success: true
         });
@@ -378,7 +378,7 @@ exports.genre_year = function(req, res) {
         _.map(movies, function(movie){
             _.each(movie.castname, function(el, idx, ls) {
                 casts[idx] = {
-                    actor_id: movie.cast_actors[idx],
+                    idactors: movie.cast_actors[idx],
                     name: movie.castname[idx],
                     character: movie.cast_characters[idx],
                     billing_position: movie.cast_billing_positions[idx]
@@ -391,13 +391,13 @@ exports.genre_year = function(req, res) {
                     return doc.character;
                 }
                 else{
-                    return doc.actor_id;
+                    return doc.idactors;
                 }
             }),function(grouped){
                 return grouped[0];
             });
 
-            var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
+            var uniqsort = _.sortBy(uniques, function(cast) { return cast.idactors; });
 
             movie.casts = uniqsort;
 
@@ -466,7 +466,7 @@ exports.genre_year_range = function(req, res) {
         _.map(movies, function(movie){
             _.each(movie.castname, function(el, idx, ls) {
                 casts[idx] = {
-                    actor_id: movie.cast_actors[idx],
+                    idactors: movie.cast_actors[idx],
                     name: movie.castname[idx],
                     character: movie.cast_characters[idx],
                     billing_position: movie.cast_billing_positions[idx]
@@ -479,13 +479,13 @@ exports.genre_year_range = function(req, res) {
                     return doc.character;
                 }
                 else{
-                    return doc.actor_id;
+                    return doc.idactors;
                 }
             }),function(grouped){
                 return grouped[0];
             });
 
-            var uniqsort = _.sortBy(uniques, function(cast) { return cast.actor_id; });
+            var uniqsort = _.sortBy(uniques, function(cast) { return cast.idactors; });
 
             movie.casts = uniqsort;
 
@@ -511,7 +511,7 @@ exports.genre_year_range = function(req, res) {
             count: movies.length,
             data: {
                 movies: movies,
-                movies_by_year: _.groupBy(movies, function(num){ return num.movie_year; })
+                movies_by_year: _.groupBy(movies, function(num){ return num.year; })
             },
             success: true
         });
