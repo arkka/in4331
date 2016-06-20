@@ -76,7 +76,7 @@ table "acted_in" do
 	column "idacted_in", :key
 	column "idmovies", :integer, :references => :movies
 	column "idseries"
-	column "idactors"
+	column "idactors", :integer, :references => :actors
 	column "character", :string
 	column "billing_position", :integer
 end
