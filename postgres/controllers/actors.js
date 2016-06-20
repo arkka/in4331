@@ -169,7 +169,7 @@ exports.search = function (req, res){
 
     if (!isNaN(keyword)){
         query = queryString +
-            "WHERE actors.idactors = '"+keyword+"' OR lower(actors.fname) LIKE lower('%"+keyword+"%') OR lower(actors.lname) LIKE lower('%"+keyword+"%' " +
+            "WHERE actors.idactors = '"+keyword+"' OR lower(actors.fname) LIKE lower('%"+keyword+"%') OR lower(actors.lname) LIKE lower('%"+keyword+"%') " +
             "GROUP BY actors.idactors, full_name, actors.gender, actors.number ";
 
     } else if(keyword.indexOf(" ")>-1){
