@@ -137,21 +137,51 @@ exports.genre_year = function(req, res) {
 
     /*match (m:Movie)-[:HAS_GENRE]->(g:genre), m-[:HAS_AKATITLES]->(ak)
      where m.year = 1992 AND g.genre = 'pop' return distinct m, ak as Aka_titles ORDER BY m.title DESC*/
-     var query = apoc.query("MATCH (m:Movies)-[:HAS_GENRE]->(g:Genres) " +
-         "WHERE m.year = "+yearQ+" AND g.genre = '"+genreQ+"' " +
-         "RETURN distinct m AS Movies");
+    var query = apoc.query("MATCH (m:Movies)-[:HAS_GENRE]->(g:Genres) " +
+        "MATCH (m)-[:HAS_KEYWORD]->(k:Keywords)" +
+        "MATCH (m)-[:HAS_GENRE]->(ga:Genres) " +
+        "MATCH (actors:Actors)-[ac:ACTED_IN]->(m) " +
+        "WHERE m.year = "+yearQ+" AND g.genre = '"+genreQ+"' " +
+        "RETURN DISTINCT m, COLLECT(DISTINCT(actors)), COLLECT(DISTINCT(ac)), COLLECT(DISTINCT(ga.genre)), COLLECT(DISTINCT(k.keyword)) ORDER BY m.year");
 
-    query.exec().then(function (result) {
+    query.exec().then(function (actors) {
+
+        var result = actors[0];
+
+        var out = [];
+
+        for (var i = 0; i < result.data.length; i++){
+
+            var casts = [];
+
+            for (var j = 0; j < result.data[i].row[1].length; j++){
+                var name = result.data[i].row[1][j].fname + " " +  result.data[i].row[1][j].mname + " " + result.data[i].row[1][j].lname;
+
+                casts.push({
+                    idactors: result.data[i].row[1][j].idactors,
+                    name: name,
+                    character: result.data[i].row[2][j].character,
+                    billing_position: result.data[i].row[2][j].billing_position
+                })
+            }
+            result.data[i].row[0].casts = casts;
+
+            result.data[i].row[0].genres = result.data[i].row[3];
+            result.data[i].row[0].keywords = result.data[i].row[4];
+
+            out.push(result.data[i].row[0]);
+        }
+
         res.json({
-            success: true,
             keyword: {
                 genre: genreQ,
-                year: yearQ
+                year: yearQ,
             },
-            count: result.length,
+            count: out.length,
             data: {
-                movie: result
-            }
+                movies: out
+            },
+            success: true
         });
     }, function (err) {
         res.json({
@@ -190,21 +220,51 @@ exports.genre_year_range = function(req, res) {
     /*match (m:Movie)-[:HAS_GENRE]->(g:genre), m-[:HAS_AKATITLES]->(ak)
      where m.year = 1992 AND g.genre = 'pop' return distinct m, ak as Aka_titles ORDER BY m.title DESC*/
     var query = apoc.query("MATCH (m:Movies)-[:HAS_GENRE]->(g:Genres) " +
-        "WHERE m.year >=" + yFrom + " AND m.year <=" + yTo + " AND g.genre = '" +genreQ+"' "+
-        " RETURN DISTINCT m.year, m.title ORDER BY m.year");
+        "MATCH (m)-[:HAS_KEYWORD]->(k:Keywords)" +
+        "MATCH (m)-[:HAS_GENRE]->(ga:Genres) " +
+        "MATCH (actors:Actors)-[ac:ACTED_IN]->(m) " +
+        "WHERE m.year >=" + yFrom + " AND m.year <=" + yTo + " AND g.genre = '" +genreQ+"' " +
+        "RETURN DISTINCT m, COLLECT(DISTINCT(actors)), COLLECT(DISTINCT(ac)), COLLECT(DISTINCT(ga.genre)), COLLECT(DISTINCT(k.keyword)) ORDER BY m.year");
 
-    query.exec().then(function (result) {
+    query.exec().then(function (actors) {
+
+        var result = actors[0];
+
+        var out = [];
+
+        for (var i = 0; i < result.data.length; i++){
+
+            var casts = [];
+
+            for (var j = 0; j < result.data[i].row[1].length; j++){
+                var name = result.data[i].row[1][j].fname + " " +  result.data[i].row[1][j].mname + " " + result.data[i].row[1][j].lname;
+
+                casts.push({
+                    idactors: result.data[i].row[1][j].idactors,
+                    name: name,
+                    character: result.data[i].row[2][j].character,
+                    billing_position: result.data[i].row[2][j].billing_position
+                })
+            }
+            result.data[i].row[0].casts = casts;
+
+            result.data[i].row[0].genres = result.data[i].row[3];
+            result.data[i].row[0].keywords = result.data[i].row[4];
+
+            out.push(result.data[i].row[0]);
+        }
+
         res.json({
-            success: true,
             keyword: {
                 genre: genreQ,
                 year_start: yFrom,
                 year_end: yTo
             },
-            count: result.length,
+            count: out.length,
             data: {
-                movie: result
-            }
+                movies: out
+            },
+            success: true
         });
     }, function (err) {
         res.json({

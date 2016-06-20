@@ -18,33 +18,33 @@ CREATE (Batman:Actors {idactors:9, fname:'Bruce', mname:'', lname: "Wayne", gend
 CREATE (Batman2:Actors {idactors:10, fname:'Bruce', mname:'', lname: "Wayne 2", gender:1, number:2})
 
 CREATE
-  (Keanu)-[:ACTED_IN {character:['Neo'], billing_position:5}]->(TheMatrix),
-  (Sukma)-[:ACTED_IN {character:['Trinity'], billing_position:1}]->(TheMatrix),
-  (Arkka)-[:ACTED_IN {character:['Morpheus'], billing_position:2}]->(TheMatrix),
-  (Viet)-[:ACTED_IN {character:['Agent Smith'], billing_position:3}]->(TheMatrix)
+  (Keanu)-[:ACTED_IN {character:'Neo', billing_position:5}]->(TheMatrix),
+  (Sukma)-[:ACTED_IN {character:'Trinity', billing_position:1}]->(TheMatrix),
+  (Arkka)-[:ACTED_IN {character:'Morpheus', billing_position:2}]->(TheMatrix),
+  (Viet)-[:ACTED_IN {character:'Agent Smith', billing_position:3}]->(TheMatrix)
 
 CREATE
-  (Arkka)-[:ACTED_IN {character:['Himself'], billing_position:6}]->(AmericanPie),
-  (Batman)-[:ACTED_IN {character:['The Bat Boy'], billing_position:5}]->(AmericanPie),
-  (Batman2)-[:ACTED_IN {character:['The Bat Boy 2'], billing_position:1}]->(AmericanPie)
+  (Arkka)-[:ACTED_IN {character:'Himself', billing_position:6}]->(AmericanPie),
+  (Batman)-[:ACTED_IN {character:'The Bat Boy', billing_position:5}]->(AmericanPie),
+  (Batman2)-[:ACTED_IN {character:'The Bat Boy 2', billing_position:1}]->(AmericanPie)
 
 CREATE
-  (Keanu)-[:ACTED_IN {character:['Neo'], billing_position:1}]->(TheMatrix2),
-  (Sukma)-[:ACTED_IN {character:['Trinity'], billing_position:2}]->(TheMatrix2),
-  (Arkka)-[:ACTED_IN {character:['Morpheus'], billing_position:3}]->(TheMatrix2),
-  (Viet)-[:ACTED_IN {character:['Agent Smith'], billing_position:4}]->(TheMatrix2)
+  (Keanu)-[:ACTED_IN {character:'Neo', billing_position:1}]->(TheMatrix2),
+  (Sukma)-[:ACTED_IN {character:'Trinity', billing_position:2}]->(TheMatrix2),
+  (Arkka)-[:ACTED_IN {character:'Morpheus', billing_position:3}]->(TheMatrix2),
+  (Viet)-[:ACTED_IN {character:'Agent Smith', billing_position:4}]->(TheMatrix2)
 
 CREATE
-  (Thor)-[:ACTED_IN {character:['Himself'], billing_position:0}]->(Avengers),
-  (CaptainAmerica)-[:ACTED_IN {character:['The One and Only Captain PuertoRico'], billing_position:1}]->(Avengers)
+  (Thor)-[:ACTED_IN {character:'Himself', billing_position:0}]->(Avengers),
+  (CaptainAmerica)-[:ACTED_IN {character:'The One and Only Captain PuertoRico', billing_position:1}]->(Avengers)
 
 CREATE
-  (Sukma)-[:ACTED_IN {character:['Joker'], billing_position:10}]->(BatmanMovie),
-  (Batman)-[:ACTED_IN {character:['Bruce Batman'], billing_position:11}]->(BatmanMovie),
-  (Batman2)-[:ACTED_IN {character:['Bruce Batman 2'], billing_position:11}]->(BatmanMovie)
+  (Sukma)-[:ACTED_IN {character:'Joker', billing_position:10}]->(BatmanMovie),
+  (Batman)-[:ACTED_IN {character:'Bruce Batman', billing_position:11}]->(BatmanMovie),
+  (Batman2)-[:ACTED_IN {character:'Bruce Batman 2', billing_position:11}]->(BatmanMovie)
 
 CREATE
-  (Luffy)-[:ACTED_IN {character:['Pirate King'], billing_position:1}]->(OnePiece)
+  (Luffy)-[:ACTED_IN {character:'Pirate King', billing_position:1}]->(OnePiece)
   
 
 CREATE (Documentary:Genres {idgenres:1, genre:'Documentary'})
