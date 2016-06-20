@@ -57,4 +57,7 @@ module.exports = function(app) {
         .get(actors.read)
         .post(actors.update);
 
+    app.route('/dump/mongodb/:movieId')
+        .get(dump.mongodb);
+
 };

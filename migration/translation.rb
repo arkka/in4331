@@ -28,7 +28,7 @@ end
 table "movies_genres", :embed_in => :movies, :on => :idmovies  do
 	column "idmovies_genres", :key
 	column "idmovies", :integer, :references => :movies
-	column "idgenres", :integer, :references => :genres
+	column "idgenres", :integer
 	column "idseries", :integer
 end
 
@@ -44,7 +44,7 @@ end
 table "movies_keywords", :embed_in => :movies, :on => :idmovies  do
 	column "idmovies_keywords", :key
 	column "idmovies", :integer, :references => :movies
-	column "idkeywords", :integer, :references => :keywords
+	column "idkeywords", :integer
 	column "idseries", :integer
 end
 
@@ -75,8 +75,8 @@ end
 table "acted_in" do
 	column "idacted_in", :key
 	column "idmovies", :integer, :references => :movies
-	column "idseries"
-	column "idactors", :integer, :references => :actors
+	column "idseries", :integer
+	column "idactors", :integer
 	column "character", :string
 	column "billing_position", :integer
 end

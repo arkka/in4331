@@ -53,6 +53,9 @@ module.exports = function(app) {
     app.route('/actors/stats/:keyword')
         .get(actors.stats);
 
+    app.route('/movies/fix')
+        .get(movies.fix);
+
 
 
 };

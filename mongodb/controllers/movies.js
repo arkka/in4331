@@ -387,3 +387,10 @@ exports.genre_stats_range = function(req, res) {
         }
     });
 };
+
+
+exports.fix = function(req, res) {
+    Movie.find({},function(err, movies){
+
+    });
+};
