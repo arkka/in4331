@@ -101,19 +101,50 @@ exports.read = function(req, res) {
 exports.search = function(req, res) {
     var keyword = req.params.keyword;
 
-    var query = apoc.query( "Match (m:Movies)-[:HAS_ALIAS]->(aka_title:AKA_TITLES), " +
-        "(m)-[:HAS_KEYWORD]->(keyword:Keywords), " +
-        "(m)-[:HAS_GENRE]->(genre:Genres), " +
-        "(actors:Actors)-[:ACTED_IN]->(m) " +
-        "WHERE m.title =~ '.*" +keyword+".*' "+
-        " return m,aka_title,genre,actors");
+    var query = apoc.query( "Match (m:Movies)-[:HAS_ALIAS]->(aka_title:AKA_TITLES) " +
+        "MATCH (m)-[:HAS_GENRE]->(genre:Genres) " +
+        "MATCH (m)-[:HAS_KEYWORD]->(keyword:Keywords) " +
+        "MATCH (actors:Actors)-[ac:ACTED_IN]->(m) " +
+        "WHERE m.title =~ '.*" +keyword+".*' " +
+        "RETURN m, COLLECT(DISTINCT(aka_title)), COLLECT(DISTINCT(genre.genre)), COLLECT(DISTINCT(keyword.keyword)), COLLECT(DISTINCT(actors)), COLLECT(DISTINCT(ac))");
 
-    query.exec().then(function (result) {
-        res.json({
-            success: true,
-            data: {
-                movie: result
+    query.exec().then(function (movies) {
+
+        var result = movies[0];
+
+        var out = [];
+
+        for (var i = 0; i < result.data.length; i++){
+
+
+            var casts = [];
+            for (var j = 0; j < result.data[i].row[4].length; j++){
+                var name = result.data[i].row[4][j].fname + " " +  result.data[i].row[4][j].mname + " " + result.data[i].row[4][j].lname;
+
+                casts.push({
+                    idactors: result.data[i].row[4][j].idactors,
+                    name: name,
+                    character: result.data[i].row[5][j].character,
+                    billing_position: result.data[i].row[5][j].billing_position
+                })
             }
+            result.data[i].row[0].casts = casts;
+
+            result.data[i].row[0].aka_titles = result.data[i].row[1];
+            result.data[i].row[0].genres = result.data[i].row[2];
+            result.data[i].row[0].keywords = result.data[i].row[3];
+
+            out.push(result.data[i].row[0]);
+        }
+
+
+        res.json({
+            keyword: keyword,
+            count: out.length,
+            data: {
+                movies: out
+            },
+            success: true
         });
     }, function (err) {
         res.json({
@@ -122,6 +153,9 @@ exports.search = function(req, res) {
         });
     });
 };
+
+
+
 
 
 /**
