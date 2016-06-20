@@ -228,7 +228,7 @@ exports.genre_stats = function(req, res) {
      WHERE m.year = 2000 return genre, m, count(m)As Total order by genre.id desc*/
     var query = apoc.query("MATCH (m:Movies)-[:HAS_GENRE]->(genre:Genres) " +
         "WHERE m.year = "+keyword+
-        " return genre, count(m) As Total order by genre.id desc");
+        " return genre.genre, count(m) As Total");
 
     query.exec().then(function (result) {
 
@@ -277,7 +277,7 @@ exports.genre_stats_range = function(req, res) {
      WHERE m.year = 2000 return genre, m, count(m)As Total order by genre.id desc*/
     var query = apoc.query("MATCH (m:Movies)-[:HAS_GENRE]->(genre:Genres) " +
         "WHERE m.year >= "+yFrom+ " AND m.year <= "+yTo+
-        " return genre, count(m) As Total order by genre.id desc");
+        " return genre.genre, count(m) As Total");
 
     query.exec().then(function (result) {
 
