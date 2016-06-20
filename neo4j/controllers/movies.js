@@ -39,15 +39,10 @@ exports.create = function(req, res) {
 };
 
 /**
- * Read
+ * List
  */
-exports.read = function(req, res) {
-    var query = apoc.query( "Match (m:Movie)-[:HAS_AKATITLES]->(aka_title:Aka_titles), " +
-        "m-[:HAS_KEYWORD]->(keyword:Keyword), " +
-        "m-[:HAS_GENRE]->(genre:Genre), " +
-        "m-[:IN_SERIES]->(series:Series), " +
-        "m<-[:ACTED_IN]-(actors:Actors), "+
-        "return a,aka_title,series,actors");
+exports.list = function(req, res) {
+    var query = apoc.query(" MATCH (a:Movies) return a limit 10");
 
     query.exec().then(function (result) {
         res.json({
@@ -62,15 +57,42 @@ exports.read = function(req, res) {
             success: false
         });
     });
-
 };
 
 /**
- * List
+ * Search
+ * SC1: Detailed movie information
  */
-exports.list = function(req, res) {
+exports.read = function(req, res) {
+
+    var keyword = req.params.movieId;
+    
+    var query = apoc.query( "Match (m:Movies)-[:HAS_ALIAS]->(aka_title:AKA_TITLES), " +
+        "(m)-[:HAS_KEYWORD]->(keyword:Keywords), " +
+        "(m)-[:HAS_GENRE]->(genre:Genres), " +
+        "(actors:Actors)-[:ACTED_IN]->(m) " +
+        "WHERE m.idmovies = " +keyword+
+        " return m,aka_title,genre,actors");
+
+    query.exec().then(function (result) {
+        res.json({
+            keyword: keyword,
+            count: result.length,
+            data: {
+                movie: result
+            },
+            success: true
+        });
+    }, function (err) {
+        res.json({
+            error: err,
+            querystring:query,
+            success: false
+        });
+    });
 
 };
+
 
 /**
  * Search
@@ -78,18 +100,13 @@ exports.list = function(req, res) {
  */
 exports.search = function(req, res) {
     var keyword = req.params.keyword;
-    var parameter;
 
-    if (!isNaN(keyword)){
-        parameter = "m.title =~ '.*"+keyword+".*'"+" OR m.idmovies ="+keyword;
-    }
-    else parameter = "m.title =~ '.*"+keyword+".*'";
-    var query = apoc.query( "Match (m:Movie {"+parameter+"})-[:HAS_AKATITLES]->(aka_title:Aka_titles), " +
-        "m-[:HAS_KEYWORD]->(keyword:Keyword), " +
-        "m-[:HAS_GENRE]->(genre:Genre), " +
-        "m-[:IN_SERIES]->(series:Series), " +
-        "m<-[:ACTED_IN]-(actors:Actors), "+
-        "return m,aka_title,series,actors group by m");
+    var query = apoc.query( "Match (m:Movies)-[:HAS_ALIAS]->(aka_title:AKA_TITLES), " +
+        "(m)-[:HAS_KEYWORD]->(keyword:Keywords), " +
+        "(m)-[:HAS_GENRE]->(genre:Genres), " +
+        "(actors:Actors)-[:ACTED_IN]->(m) " +
+        "WHERE m.title =~ '.*" +keyword+".*' "+
+        " return m,aka_title,genre,actors");
 
     query.exec().then(function (result) {
         res.json({
@@ -106,16 +123,6 @@ exports.search = function(req, res) {
     });
 };
 
-/**
- * Genre
- * SC4: Detailed movie information
- */
-exports.genre = function(req, res) {
-    var keyword = req.params.genre;
-
-    // Query
-    var query = "";
-};
 
 /**
  * Genre
@@ -124,15 +131,15 @@ exports.genre = function(req, res) {
 // TODO: Check check check with real data
 // TODO: Implement year range filter
 exports.genre_year = function(req, res) {
+
     var genreQ = req.params.genre;
     var yearQ = req.params.year;
 
-
     /*match (m:Movie)-[:HAS_GENRE]->(g:genre), m-[:HAS_AKATITLES]->(ak)
      where m.year = 1992 AND g.genre = 'pop' return distinct m, ak as Aka_titles ORDER BY m.title DESC*/
-    var query = "MATCH (m:Movie)-[:HAS_GENRE]->(g:Genre), m-[:HAS_AKATITLES]->(ak) " +
-        "WHERE m.year =" +yearQ+ " AND g.genre =" +genreQ+
-        " RETURN DISTINCT m, ak AS Aka_titles ORDER BY m,title DESC";
+     var query = apoc.query("MATCH (m:Movies)-[:HAS_GENRE]->(g:Genres) " +
+         "WHERE m.year = "+yearQ+" AND g.genre = '"+genreQ+"' " +
+         "RETURN distinct m AS Movies");
 
     query.exec().then(function (result) {
         res.json({
@@ -141,7 +148,7 @@ exports.genre_year = function(req, res) {
                 genre: genreQ,
                 year: yearQ
             },
-            count: movies.length,
+            count: result.length,
             data: {
                 movie: result
             }
@@ -149,6 +156,7 @@ exports.genre_year = function(req, res) {
     }, function (err) {
         res.json({
             error: err,
+            querystring:query,
             success: false
         });
     });
@@ -181,9 +189,9 @@ exports.genre_year_range = function(req, res) {
     // Query
     /*match (m:Movie)-[:HAS_GENRE]->(g:genre), m-[:HAS_AKATITLES]->(ak)
      where m.year = 1992 AND g.genre = 'pop' return distinct m, ak as Aka_titles ORDER BY m.title DESC*/
-    var query = "MATCH (m:Movie)-[:HAS_GENRE]->(g:Genre), m-[:HAS_AKATITLES]->(ak) " +
-        "WHERE m.year >=" + yFrom + " AND m.year <=" + yTo + " AND g.genre =" +genreQ+
-        " RETURN DISTINCT m, ak AS Aka_titles ORDER BY m,title DESC";
+    var query = apoc.query("MATCH (m:Movies)-[:HAS_GENRE]->(g:Genres) " +
+        "WHERE m.year >=" + yFrom + " AND m.year <=" + yTo + " AND g.genre = '" +genreQ+"' "+
+        " RETURN DISTINCT m.year, m.title ORDER BY m.year");
 
     query.exec().then(function (result) {
         res.json({
@@ -193,7 +201,7 @@ exports.genre_year_range = function(req, res) {
                 year_start: yFrom,
                 year_end: yTo
             },
-            count: movies.length,
+            count: result.length,
             data: {
                 movie: result
             }
@@ -201,6 +209,7 @@ exports.genre_year_range = function(req, res) {
     }, function (err) {
         res.json({
             error: err,
+            querystring:query,
             success: false
         });
     });
@@ -217,17 +226,15 @@ exports.genre_stats = function(req, res) {
 
     /*MATCH (m:Movies)-[:HAS_GENRE]->(genre)
      WHERE m.year = 2000 return genre, m, count(m)As Total order by genre.id desc*/
-    var query = "MATCH (m:Movies)-[:HAS_GENRE]->(genre) " +
+    var query = apoc.query("MATCH (m:Movies)-[:HAS_GENRE]->(genre:Genres) " +
         "WHERE m.year = "+keyword+
-        "return genre, count(m)As Total order by genre.id desc";
+        " return genre, count(m) As Total order by genre.id desc");
 
     query.exec().then(function (result) {
 
-        // Delete genre with null value
-        result = _.reject(result, function(d){ return d.genre == null; });
-
         res.json({
             success: true,
+            querystring:query,
             keyword: {
                 year: keyword
             },
@@ -268,19 +275,20 @@ exports.genre_stats_range = function(req, res) {
 
     /*MATCH (m:Movies)-[:HAS_GENRE]->(genre)
      WHERE m.year = 2000 return genre, m, count(m)As Total order by genre.id desc*/
-    var query = "MATCH (m:Movies)-[:HAS_GENRE]->(genre) " +
-        "WHERE m.year >= "+yFrom+ "AND m.year <= "+yTo+
-        "return genre, count(m)As Total order by genre.id desc";
+    var query = apoc.query("MATCH (m:Movies)-[:HAS_GENRE]->(genre:Genres) " +
+        "WHERE m.year >= "+yFrom+ " AND m.year <= "+yTo+
+        " return genre, count(m) As Total order by genre.id desc");
 
     query.exec().then(function (result) {
 
         // Delete genre with null value
-        result = _.reject(result, function(d){ return d.genre == null; });
+        //result = _.reject(result, function(d){ return d.genre == null; });
 
         res.json({
             success: true,
             keyword: {
-                year: keyword
+                year_start: yFrom,
+                year_end: yTo
             },
 
             data: {
@@ -289,6 +297,7 @@ exports.genre_stats_range = function(req, res) {
         });
     }, function (err) {
         res.json({
+            querystring:query,
             error: err,
             success: false
         });
