@@ -15,7 +15,7 @@ CREATE (Dora:Actors {idactors:6, fname:'Dora', mname:'The', lname: "Explorer", g
 CREATE (Luffy:Actors {idactors:7, fname:'Monkey', mname:'D', lname: "Luffy", gender:2, number:5})
 CREATE (CaptainAmerica:Actors {idactors:8, fname:'Captain', mname:'', lname: "America", gender:1, number:0})
 CREATE (Batman:Actors {idactors:9, fname:'Bruce', mname:'', lname: "Wayne", gender:2, number:2})
-
+CREATE (Batman2:Actors {idactors:10, fname:'Bruce', mname:'', lname: "Wayne 2", gender:1, number:2})
 
 CREATE
   (Keanu)-[:ACTED_IN {character:['Neo'], billing_position:5}]->(TheMatrix),
@@ -25,7 +25,8 @@ CREATE
 
 CREATE
   (Arkka)-[:ACTED_IN {character:['Himself'], billing_position:6}]->(AmericanPie),
-  (Batman)-[:ACTED_IN {character:['The Bat Boy'], billing_position:5}]->(AmericanPie)
+  (Batman)-[:ACTED_IN {character:['The Bat Boy'], billing_position:5}]->(AmericanPie),
+  (Batman2)-[:ACTED_IN {character:['The Bat Boy 2'], billing_position:1}]->(AmericanPie)
 
 CREATE
   (Keanu)-[:ACTED_IN {character:['Neo'], billing_position:1}]->(TheMatrix2),
@@ -39,7 +40,8 @@ CREATE
 
 CREATE
   (Sukma)-[:ACTED_IN {character:['Joker'], billing_position:10}]->(BatmanMovie),
-  (Batman)-[:ACTED_IN {character:['Bruce Batman'], billing_position:11}]->(BatmanMovie)
+  (Batman)-[:ACTED_IN {character:['Bruce Batman'], billing_position:11}]->(BatmanMovie),
+  (Batman2)-[:ACTED_IN {character:['Bruce Batman 2'], billing_position:11}]->(BatmanMovie)
 
 CREATE
   (Luffy)-[:ACTED_IN {character:['Pirate King'], billing_position:1}]->(OnePiece)
@@ -137,4 +139,6 @@ CREATE
   (Luffy)-[:HAS_ALIAS]->(AliasName8),
   (CaptainAmerica)-[:HAS_ALIAS]->(AliasName9),
   (Batman)-[:HAS_ALIAS]->(AliasName10),
-  (Batman)-[:HAS_ALIAS]->(AliasName11)
+  (Batman)-[:HAS_ALIAS]->(AliasName11),
+  (Batman2)-[:HAS_ALIAS]->(AliasName10),
+  (Batman2)-[:HAS_ALIAS]->(AliasName11)

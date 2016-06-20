@@ -144,17 +144,32 @@ exports.stats = function(req, res) {
     }
     else     parameter = "a.lname =~ '.*"+keyword+".*'" +" OR "+ "a.fname =~ '.*"+keyword+".*'";
 
-    var query = apoc.query( "Match (a:Actors)-[:HAS_ALIAS]->(aka_names:AKA_NAMES), " +
-        "(a)-[:ACTED_IN]->(movies:Movies) " +
+    var query = apoc.query( "Match (a:Actors)-[:ACTED_IN]->(movies:Movies) " +
         "WHERE "+ parameter +
-        " return a, aka_names, count(movies) as Movie_Played");
+        " return a as actor, count(movies) as num_movies");
 
-    query.exec().then(function (result) {
+    query.exec().then(function (actors) {
+
+        var result = actors[0];
+
+        var out = [];
+
+        for (var i = 0; i < result.data.length; i++){
+
+            var name = result.data[i].row[0].fname + " " +  result.data[i].row[0].mname + " " + result.data[i].row[0].lname;
+            out.push({
+                name: name,
+                num_movies: result.data[i].row[1]
+            })
+        }
+
         res.json({
-            success: true,
+            keyword: keyword,
+            count: out.length,
             data: {
-                actors: result
-            }
+                actors: out
+            },
+            success: true
         });
     }, function (err) {
         res.json({
