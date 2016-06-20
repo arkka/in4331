@@ -275,8 +275,8 @@ exports.search = function(req, res) {
             },
             success: true
         });
-        // Results will be an empty array and metadata will contain the number of affected rows.
-    });
+    })
+
 };
 
 

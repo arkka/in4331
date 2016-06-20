@@ -6,7 +6,6 @@
 module.exports = function(app) {
     var movies = require('../controllers/movies');
     var actors = require('../controllers/actors');
-    var dump = require('../controllers/dump');
 
     app.route('/')
         .get(movies.index);
@@ -16,50 +15,33 @@ module.exports = function(app) {
         .get(movies.list);
 
     app.route('/movies/:movieId')
-        .get(movies.read)
-        .post(movies.update);
+        .get(movies.read);
 
     app.route('/movies/search/:keyword')
         .get(movies.search);
-
-    app.route('/movies/explore/:genre')
-        .get(movies.genre);
-
+    
     app.route('/movies/explore/:genre/:year')
         .get(movies.genre_year);
 
     app.route('/movies/explore/:genre/:yfrom/:yto')
         .get(movies.genre_year_range);
 
-    app.route('/movies/genre/stats/:year')
+    app.route('/movies/stats/:year')
         .get(movies.genre_stats);
 
-    app.route('/movies/genre/stats/:yfrom/:yto')
+    app.route('/movies/stats/:yfrom/:yto')
         .get(movies.genre_stats_range);
-
 
     app.route('/actors')
         .put(actors.create)
         .get(actors.list);
-        //.get(actors.read);
 
     app.route('/actors/:actorId')
         .get(actors.read);
-        //.post(actors.update);
 
     app.route('/actors/search/:keyword')
         .get(actors.search);
 
     app.route('/actors/stats/:keyword')
         .get(actors.stats);
-
-    app.route('/actors/:actorId')
-        .get(actors.read)
-        .post(actors.update);
-
-        */
-
-    app.route('/dump/neo4j')
-        .get(dump.neo4j);
-
 };
