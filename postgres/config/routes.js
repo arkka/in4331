@@ -31,10 +31,10 @@ module.exports = function(app) {
     app.route('/movies/explore/:genre/:yfrom/:yto')
         .get(movies.genre_year_range);
 
-    app.route('/movies/genre/stats/:year')
+    app.route('/movies/:genre/stats/:year')
         .get(movies.genre_stats);
 
-    app.route('/movies/genre/stats/:yfrom/:yto')
+    app.route('/movies/:genre/stats/:yfrom/:yto')
         .get(movies.genre_stats_range);
 
 
@@ -56,10 +56,5 @@ module.exports = function(app) {
     app.route('/actors/:actorId')
         .get(actors.read)
         .post(actors.update);
-
-        */
-
-    app.route('/dump/neo4j')
-        .get(dump.neo4j);
 
 };
