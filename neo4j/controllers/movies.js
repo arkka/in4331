@@ -128,11 +128,11 @@ exports.search = function(req, res) {
                     billing_position: result.data[i].row[5][j].billing_position
                 })
             }
-            result.data[i].row[0].casts = casts;
 
             result.data[i].row[0].aka_titles = result.data[i].row[1];
             result.data[i].row[0].genres = result.data[i].row[2];
             result.data[i].row[0].keywords = result.data[i].row[3];
+            result.data[i].row[0].casts = casts;
 
             out.push(result.data[i].row[0]);
         }
@@ -153,10 +153,6 @@ exports.search = function(req, res) {
         });
     });
 };
-
-
-
-
 
 /**
  * Genre
