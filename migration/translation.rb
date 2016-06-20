@@ -2,6 +2,7 @@
 
 table "movies" do
 	column "idmovies", :key
+	column "idmovies", :integer
 	column "title", :string
 	column "year", :integer
 	column "number", :integer
@@ -57,6 +58,7 @@ end
 
 table "actors" do
 	column "idactors", :key
+	column "idactors", :integer
 	column "lname", :string
 	column "fname", :string
 	column "mname", :string
@@ -74,7 +76,7 @@ table "acted_in" do
 	column "idacted_in", :key
 	column "idmovies", :integer, :references => :movies
 	column "idseries"
-	column "idactors", :integer, :references => :actors
+	column "idactors"
 	column "character", :string
 	column "billing_position", :integer
 end
