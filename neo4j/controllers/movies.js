@@ -175,7 +175,7 @@ exports.genre_year = function(req, res) {
         res.json({
             keyword: {
                 genre: genreQ,
-                year: yearQ,
+                year: yearQ
             },
             count: out.length,
             data: {
@@ -262,7 +262,8 @@ exports.genre_year_range = function(req, res) {
             },
             count: out.length,
             data: {
-                movies: out
+                movies: out,
+                movies_by_year: _.groupBy(out, function(num){ return num.year; })
             },
             success: true
         });
