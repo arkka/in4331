@@ -298,19 +298,14 @@ exports.genre_stats = function(req, res) {
         for (var i = 0; i < genre.data.length; i++) {
             out.push( {
                 genre:genre.data[i].row[0],
-                num_movies:genre.data[i].row[1]
+                movie_count:genre.data[i].row[1]
             });
         }
         res.json({
-            success: true,
-            count: out.length,
-            keyword: {
-                year: keyword
-            },
-
-            data: {
-                genre:out
-            }
+            keyword: keyword,
+            total_genres: out.length,
+            data: out,
+            success: true
         });
     }, function (err) {
         res.json({
@@ -355,19 +350,17 @@ exports.genre_stats_range = function(req, res) {
         for (var i = 0; i < genre.data.length; i++) {
             out.push( {
                 genre:genre.data[i].row[0],
-                num_movies:genre.data[i].row[1]
+                movie_count:genre.data[i].row[1]
         });
         }
             res.json({
-            success: true,
-            keyword: {
-                year_start: yFrom,
-                year_end: yTo
-            },
-            count: out.length,
-            data: {
-                genre: out
-            }
+                keyword: {
+                    year_start: yFrom,
+                    year_end: yTo
+                },
+                total_genres: out.length,
+                data: out,
+                success: true
         });
     }, function (err) {
         res.json({
