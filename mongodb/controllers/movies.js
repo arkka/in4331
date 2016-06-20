@@ -292,7 +292,7 @@ exports.genre_stats = function(req, res) {
 
                 res.json({
                     keyword: keyword,
-                    total_movies: moviesTotal,
+                    //total_movies: moviesTotal,
                     //total_genres: _.uniq(genres).length,
                     //data: {
                     //    genre: _.countBy(genres, function(num) { return num; })
@@ -376,7 +376,7 @@ exports.genre_stats_range = function(req, res) {
                     year_start: yFrom,
                     year_end: yTo
                 },
-                total_movies: moviesTotal,
+                //total_movies: moviesTotal,
                 //total_genres: _.uniq(genres).length,
                 //data: {
                 //    genre: _.countBy(genres, function(num) { return num; })
