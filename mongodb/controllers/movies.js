@@ -72,6 +72,7 @@ exports.update = function(req, res) {
  */
 exports.list = function(req, res) {
     Movie.find({}, function(err, movies){
+        console.log(movies);
         if(err || !movies) res.json({data: null, success: false});
         else res.json({
             data: {

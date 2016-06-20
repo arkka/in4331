@@ -142,7 +142,8 @@ exports.search = function(req, res) {
             keyword: keyword,
             count: out.length,
             data: {
-                movies: out
+                movies: out,
+                movies_by_year: _.groupBy(out, function(num){ return num.year; })
             },
             success: true
         });
@@ -328,7 +329,7 @@ exports.genre_stats = function(req, res) {
         for (var i = 0; i < genre.data.length; i++) {
             out.push( {
                 genre:genre.data[i].row[0],
-                movie_count:genre.data[i].row[1]
+                num_movies:genre.data[i].row[1]
             });
         }
         res.json({
@@ -380,17 +381,17 @@ exports.genre_stats_range = function(req, res) {
         for (var i = 0; i < genre.data.length; i++) {
             out.push( {
                 genre:genre.data[i].row[0],
-                movie_count:genre.data[i].row[1]
-        });
+                num_movies:genre.data[i].row[1]
+            });
         }
-            res.json({
-                keyword: {
-                    year_start: yFrom,
-                    year_end: yTo
-                },
-                total_genres: out.length,
-                data: out,
-                success: true
+        res.json({
+            keyword: {
+                year_start: yFrom,
+                year_end: yTo
+            },
+            total_genres: out.length,
+            data: out,
+            success: true
         });
     }, function (err) {
         res.json({

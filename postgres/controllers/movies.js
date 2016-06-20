@@ -163,7 +163,7 @@ exports.read = function(req, res) {
             count: movies.length,
             data: {
                 movies: movies,
-                movies_by_year: _.groupBy(movies, function(num){ return num.movie_year; })
+                movies_by_year: _.groupBy(movies, function(num){ return num.year; })
             },
             success: true
         });
@@ -271,7 +271,7 @@ exports.search = function(req, res) {
             count: movies.length,
             data: {
                 movies: movies,
-                movies_by_year: _.groupBy(movies, function(num){ return num.movie_year; })
+                movies_by_year: _.groupBy(movies, function(num){ return num.year; })
             },
             success: true
         });
@@ -529,7 +529,7 @@ exports.genre_year_range = function(req, res) {
 exports.genre_stats = function(req, res) {
     var keyword = req.params.year;
 
-    var query = "SELECT DISTINCT genres.genre, count(genres.genre) as movie_count " +
+    var query = "SELECT DISTINCT genres.genre, count(genres.genre) as num_movies " +
         "FROM movies " +
         "LEFT JOIN movies_genres on movies_genres.idmovies = movies.idmovies " +
         "LEFT JOIN genres on genres.idgenres = movies_genres.idgenres " +
@@ -574,7 +574,7 @@ exports.genre_stats_range = function(req, res) {
         yTo = req.params.yto;
     }
 
-    var query = "SELECT DISTINCT genres.genre, count(genres.genre) as movie_count " +
+    var query = "SELECT DISTINCT genres.genre, count(genres.genre) as num_movies " +
         "FROM movies " +
         "LEFT JOIN movies_genres on movies_genres.idmovies = movies.idmovies " +
         "LEFT JOIN genres on genres.idgenres = movies_genres.idgenres " +

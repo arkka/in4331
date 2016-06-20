@@ -11,9 +11,9 @@ module.exports = function(app) {
         .get(movies.index);
 
     app.route('/movies')
-        .put(movies.create)
-        .get(movies.list)
-        .get(movies.read);
+        //.put(movies.create)
+        .get(movies.list);
+        //.get(movies.read);
 
     app.route('/movies/:movieId')
         .get(movies.read)
@@ -31,10 +31,10 @@ module.exports = function(app) {
     app.route('/movies/explore/:genre/:yfrom/:yto')
         .get(movies.genre_year_range);
 
-    app.route('/movies/stats/:year')
+    app.route('/movies/genre/stats/:year')
         .get(movies.genre_stats);
 
-    app.route('/movies/stats/:yfrom/:yto')
+    app.route('/movies/genre/stats/:yfrom/:yto')
         .get(movies.genre_stats_range);
 
 

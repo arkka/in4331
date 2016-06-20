@@ -26,10 +26,10 @@ module.exports = function(app) {
     app.route('/movies/explore/:genre/:yfrom/:yto')
         .get(movies.genre_year_range);
 
-    app.route('/movies/stats/:year')
+    app.route('/movies/genre/stats/:year')
         .get(movies.genre_stats);
 
-    app.route('/movies/stats/:yfrom/:yto')
+    app.route('/movies/genre/stats/:yfrom/:yto')
         .get(movies.genre_stats_range);
 
     app.route('/actors')
