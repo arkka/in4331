@@ -297,7 +297,7 @@ exports.genre = function(req, res) {
     sequelize.query(query).spread(function(movies, metadata) {
 
         _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
-        _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
+        _.map(movies, function(num){ num.genres = _.uniq(num.genres).sort()});
 
         var casts = [];
 
@@ -371,7 +371,7 @@ exports.genre_year = function(req, res) {
     sequelize.query(query).spread(function(movies, metadata) {
 
         _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
-        _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
+        _.map(movies, function(num){ num.genres = _.uniq(num.genres).sort()});
 
         var casts = [];
 
@@ -459,7 +459,7 @@ exports.genre_year_range = function(req, res) {
     sequelize.query(query).spread(function(movies, metadata) {
 
         _.map(movies, function(num){ num.keywords = _.uniq(num.keywords).sort()});
-        _.map(movies, function(num){ num.genres = _.uniq(num.genres.sort())});
+        _.map(movies, function(num){ num.genres = _.uniq(num.genres).sort()});
 
         var casts = [];
 
