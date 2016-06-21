@@ -112,7 +112,7 @@ exports.search = function(req, res) {
             //{ year  : new RegExp(keyword, 'i')}
         ]});
     }
-
+    query.populate('casts.actor');
     query.exec(function(err, movies){
         if(err || !movies ) res.json({data: null, success: false});
         else {
@@ -272,7 +272,7 @@ exports.genre_stats = function(req, res) {
                         //genres.push(nim);
                         genres.push({
                             genre: nim,
-                            movie_count: 1
+                            num_movies: 1
                         })
                     });
                 });
@@ -281,10 +281,10 @@ exports.genre_stats = function(req, res) {
                 var totalPerType = {};
                 for (var i = 0, len = genres.length; i < len; ++i) {
                     totalPerType[genres[i].genre] = totalPerType[genres[i].genre] || 0;
-                    totalPerType[genres[i].genre] += genres[i].movie_count;
+                    totalPerType[genres[i].genre] += genres[i].num_movies;
                 }
                 var out = _.map(totalPerType, function(sum, type) {
-                    return { genre: type, movie_count: sum };
+                    return { genre: type, num_movies: sum };
                 });
 
                 // Sort the result based on genre
@@ -353,7 +353,7 @@ exports.genre_stats_range = function(req, res) {
                     //genres.push(nim);
                     genres.push({
                         genre: nim,
-                        movie_count: 1
+                        num_movies: 1
                     })
                 });
             });
@@ -362,10 +362,10 @@ exports.genre_stats_range = function(req, res) {
             var totalPerType = {};
             for (var i = 0, len = genres.length; i < len; ++i) {
                 totalPerType[genres[i].genre] = totalPerType[genres[i].genre] || 0;
-                totalPerType[genres[i].genre] += genres[i].movie_count;
+                totalPerType[genres[i].genre] += genres[i].num_movies;
             }
             var out = _.map(totalPerType, function(sum, type) {
-                return { genre: type, movie_count: sum };
+                return { genre: type, num_movies: sum };
             });
 
             // Sort the result based on genre
